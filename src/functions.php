@@ -88,7 +88,7 @@ function memoize(callable $factory): LazyValue
 }
 
 /**
- * Allows to force a single property
+ * Allows to force a single property.
  */
 function force(mixed $value): ForceValue
 {

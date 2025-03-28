@@ -23,18 +23,18 @@ final class ForceValue
     }
 
     /**
-     * @param array<mixed> $what
+     * @param  array<mixed> $what
      * @return array<mixed>
      */
     public static function unwrap(mixed $what): mixed
     {
-        if (is_array($what)) {
-            return array_map(
+        if (\is_array($what)) {
+            return \array_map(
                 self::unwrap(...),
                 $what
             );
         }
 
-        return $what instanceof ForceValue ? $what->value : $what;
+        return $what instanceof self ? $what->value : $what;
     }
 }
