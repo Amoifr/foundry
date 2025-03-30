@@ -23,7 +23,7 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\Table('inversed_one_to_one_without_nullable_owning_side')]
 class OwningSide extends Base
 {
-    public function __construct( // @phpstan-ignore missingType.parameter
+    public function __construct(// @phpstan-ignore missingType.parameter
         #[ORM\OneToOne(inversedBy: 'owningSide')]
         #[ORM\JoinColumn(nullable: false)]
         public InverseSide $inverseSide,
