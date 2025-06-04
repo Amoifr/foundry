@@ -781,7 +781,7 @@ abstract class EntityFactoryRelationshipTestCase extends KernelTestCase
     public static function provideCanUseFactoryInDataProviderWithRelationshipCases(): iterable
     {
         yield [
-            static::contactFactory()
+            static::contactFactory(),
         ];
     }
 
