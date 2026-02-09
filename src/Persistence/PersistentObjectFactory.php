@@ -12,7 +12,6 @@
 namespace Zenstruck\Foundry\Persistence;
 
 use Doctrine\Persistence\ObjectRepository;
-use Symfony\Component\VarExporter\Exception\LogicException as VarExportLogicException;
 use Zenstruck\Foundry\Configuration;
 use Zenstruck\Foundry\Exception\FoundryNotBooted;
 use Zenstruck\Foundry\Exception\PersistenceDisabled;
@@ -241,10 +240,9 @@ abstract class PersistentObjectFactory extends ObjectFactory
         $configuration = Configuration::instance();
 
         if ($configuration->inADataProvider()
-            && (\PHP_VERSION_ID >= 80400 || $this instanceof PersistentProxyObjectFactory) // @phpstan-ignore booleanOr.alwaysTrue
             && ($this->isPersisting() || $configuration->isInMemoryEnabled())
         ) {
-            return ProxyGenerator::wrapFactory($this->with($attributes));
+            return $this->createLazyGhost($attributes);
         }
 
         $object = parent::create($attributes);
@@ -286,10 +284,6 @@ abstract class PersistentObjectFactory extends ObjectFactory
 
     final public function withAutorefresh(): static
     {
-        if (\PHP_VERSION_ID < 80400) {
-            throw new \LogicException('Auto-refresh requires PHP 8.4 or higher.');
-        }
-
         $clone = clone $this;
         $clone->autorefreshEnabled = true;
 
@@ -298,10 +292,6 @@ abstract class PersistentObjectFactory extends ObjectFactory
 
     final public function withoutAutorefresh(): static
     {
-        if (\PHP_VERSION_ID < 80400) {
-            throw new \LogicException('Auto-refresh requires PHP 8.4 or higher.');
-        }
-
         $clone = clone $this;
         $clone->autorefreshEnabled = false;
 
@@ -372,7 +362,7 @@ abstract class PersistentObjectFactory extends ObjectFactory
     protected function normalizeParameter(string $field, mixed $value): mixed
     {
         if (!Configuration::instance()->isPersistenceAvailable()) {
-            return ProxyGenerator::unwrap(parent::normalizeParameter($field, $value));
+            return parent::normalizeParameter($field, $value);
         }
 
         if ($value instanceof self) {
@@ -397,19 +387,14 @@ abstract class PersistentObjectFactory extends ObjectFactory
 
                 if (($fieldType = (new \ReflectionClass(static::class()))->getProperty($field)->getType())?->allowsNull()) {
                     $this->inverseRelationshipCallbacks[] = static function(object $object) use ($value, $inverseField, $field) {
-                        $inverseObject = $value->create([$inverseField => $object]);
-
-                        set($object, $field, ProxyGenerator::unwrap($inverseObject, withAutoRefresh: false));
+                        set($object, $field, $value->create([$inverseField => $object]));
                     };
 
                     // we're using "force" here to avoid a potential type check in a setter
                     return force(null);
                 } elseif (($inverseFieldType = (new \ReflectionClass($value::class()))->getProperty($inverseField)->getType())?->allowsNull()) {
-                    $inverseObject = ProxyGenerator::unwrap(
-                        // we're using "force" here to avoid a potential type check in a setter
-                        $value->create([$inverseField => force(null)]),
-                        withAutoRefresh: false
-                    );
+                    // we're using "force" here to avoid a potential type check in a setter
+                    $inverseObject = $value->create([$inverseField => force(null)]);
 
                     $this->inverseRelationshipCallbacks[] = static function(object $object) use ($inverseObject, $inverseField) {
                         set($inverseObject, $inverseField, $object);
@@ -423,7 +408,7 @@ abstract class PersistentObjectFactory extends ObjectFactory
             }
         }
 
-        return ProxyGenerator::unwrap(parent::normalizeParameter($field, $value), withAutoRefresh: false);
+        return parent::normalizeParameter($field, $value);
     }
 
     protected function normalizeCollection(string $field, FactoryCollection $collection): array
@@ -446,8 +431,6 @@ abstract class PersistentObjectFactory extends ObjectFactory
                     ->reuse(...$this->reusedObjects())
                     ->withPersistMode($this->isPersisting() ? PersistMode::NO_PERSIST_BUT_SCHEDULE_FOR_INSERT : PersistMode::WITHOUT_PERSISTING)
                     ->create([$inverseField => $object]);
-
-                $inverseObjects = ProxyGenerator::unwrap($inverseObjects, withAutoRefresh: false);
 
                 // if the collection is indexed by a field, index the array
                 if ($inverseRelationshipMetadata->collectionIndexedBy) {
@@ -475,8 +458,6 @@ abstract class PersistentObjectFactory extends ObjectFactory
     protected function normalizeObject(string $field, object $object): object
     {
         $configuration = Configuration::instance();
-
-        $object = ProxyGenerator::unwrap($object, withAutoRefresh: false);
 
         if (!$configuration->isPersistenceAvailable()) {
             return $object;
@@ -516,7 +497,7 @@ abstract class PersistentObjectFactory extends ObjectFactory
 
         try {
             return $configuration->persistence()->refresh($object);
-        } catch (RefreshObjectFailed|VarExportLogicException) { // @phpstan-ignore catch.neverThrown (thrown by var exporter)
+        } catch (RefreshObjectFailed) {
             return $object;
         }
     }
@@ -578,26 +559,43 @@ abstract class PersistentObjectFactory extends ObjectFactory
         );
     }
 
+    /**
+     * @phpstan-param callable(int):Parameters|Parameters $attributes
+     *
+     * @return T
+     */
+    private function createLazyGhost(callable|array $attributes): object
+    {
+        $factory = $this->with($attributes);
+
+        return (new \ReflectionClass(static::class()))->newLazyGhost(static function(object $ghost) use ($factory): void {
+            if (Configuration::instance()->inADataProvider() && $factory->isPersisting()) {
+                throw new \LogicException('Cannot access to a persisted object inside a data provider.');
+            }
+
+            $instantiator = $factory->instantiator();
+
+            $factory
+                ->instantiateWith(
+                    static function(array $parameters, string $class) use ($instantiator, $ghost): object {
+                        $object = $instantiator($parameters, $class);
+                        Hydrator::hydrateFromOtherObject($ghost, $object);
+
+                        return $ghost;
+                    }
+                )->create();
+        });
+    }
+
     private function throwIfCannotCreateObject(): void
     {
         $configuration = Configuration::instance();
 
-        /**
-         * "false === $configuration->inADataProvider()" would also mean that the PHPUnit extension is NOT used
-         * so a `FoundryNotBooted` exception would be thrown if we actually are in a data provider.
-         */
-        if (!$configuration->inADataProvider()) {
+        if (!$configuration->inADataProvider() || !$this->isPersisting()) {
             return;
         }
 
-        if (
-            $this instanceof PersistentProxyObjectFactory
-            || !$this->isPersisting()
-        ) {
-            return;
-        }
-
-        throw new \LogicException(\sprintf('Cannot create object in a data provider for non-proxy factories. Transform your factory into a "%s", or call "create()" method in the test. See https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#phpunit-data-providers', PersistentProxyObjectFactory::class));
+        throw new \LogicException('Cannot persist objects in a data provider. Call "create()" method in the test. See https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#phpunit-data-providers');
     }
 
     private function isPersistenceEnabled(): bool
