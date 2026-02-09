@@ -17,8 +17,8 @@ use PHPUnit\Framework\Attributes\RequiresPhpunit;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Zenstruck\Foundry\FakerAdapter;
 use Zenstruck\Foundry\Attribute\ResetDatabase;
+use Zenstruck\Foundry\FakerAdapter;
 
 use function Zenstruck\Foundry\faker;
 
