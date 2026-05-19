@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v2.10.1](https://github.com/zenstruck/foundry/releases/tag/v2.10.1)
+
+May 19th, 2026 - [v2.10.0...v2.10.1](https://github.com/zenstruck/foundry/compare/v2.10.0...v2.10.1)
+
+* bc10d82 fix: `withoutDoctrineEvents` should do nothgin in unit tests (#1121) by @VincentLanglet
+
 ## [v2.10.0](https://github.com/zenstruck/foundry/releases/tag/v2.10.0)
 
 May 19th, 2026 - [v2.9.2...v2.10.0](https://github.com/zenstruck/foundry/compare/v2.9.2...v2.10.0)
