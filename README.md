@@ -144,3 +144,7 @@ The [AAA](https://www.thephilocoder.com/unit-testing-aaa-pattern/) style of test
 [Adam Wathan's](https://adamwathan.me/) excellent [Test Driven Laravel Course](https://course.testdrivenlaravel.com/).
 The inspiration for this libraries API comes from [Laravel factories](https://laravel.com/docs/master/database-testing)
 and [christophrumpel/laravel-factories-reloaded](https://github.com/christophrumpel/laravel-factories-reloaded).
+
+## Security Policy
+
+If you discover a security vulnerability, please do not open a public issue or pull request. Instead, please review this repository's <a href="https://github.com/zenstruck/foundry/security">Security Policy</a> for instructions on how to report it responsibly.
