@@ -147,4 +147,4 @@ and [christophrumpel/laravel-factories-reloaded](https://github.com/christophrum
 
 ## Security Policy
 
-If you discover a security vulnerability, please do not open a public issue or pull request. Instead, please review this repository's <a href="https://github.com/zenstruck/foundry/security">Security Policy</a> for instructions on how to report it responsibly.
+If you discover a security vulnerability, please do not open a public issue or pull request. Instead, please review this repository's [Security Policy](https://github.com/zenstruck/foundry/security) for instructions on how to report it responsibly.
