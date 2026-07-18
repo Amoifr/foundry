@@ -32,14 +32,14 @@ use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithAsEntityListenerFac
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithDeepListenedRelationFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithListenedRelationFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithListenedRelationListener;
-use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithoutAsEntityListenerFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithOrmEntityListenerFactory;
+use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\EntityWithoutAsEntityListenerFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\ListenedEntityFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\ListenedEntityListener;
-use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\ParentOfListenedEntitiesFactory;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\MongoDoctrineEventsListener;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\OrmEntityListener;
 use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\ParentEntityForDoctrineEventsFactory;
+use Zenstruck\Foundry\Tests\Fixture\DoctrineEvents\ParentOfListenedEntitiesFactory;
 use Zenstruck\Foundry\Tests\Fixture\Events\FoundryEventListener;
 use Zenstruck\Foundry\Tests\Fixture\Factories\ArrayFactory;
 use Zenstruck\Foundry\Tests\Fixture\Factories\Object1Factory;
