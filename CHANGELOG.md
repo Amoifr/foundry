@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v2.10.2](https://github.com/zenstruck/foundry/releases/tag/v2.10.2)
+
+July 19th, 2026 - [v2.10.1...v2.10.2](https://github.com/zenstruck/foundry/compare/v2.10.1...v2.10.2)
+
+* 1ad45ac fix: `withoutDoctrineEvents()` should not remove `loadClassMetadata` listeners (#1133) by @nikophil
+* 5553b63 fix: withoutDoctrineEvents should work with nested entities (#1132) by @nikophil
+* 6917146 chore: fix Roave BC check (composer >= 2.9.8) and restrict phpunit < 13.2 (#1127) by @nikophil
+* d9ed62b doc: add README Security Policy section (#1123) by @Copilot
+
 ## [v2.10.1](https://github.com/zenstruck/foundry/releases/tag/v2.10.1)
 
 May 19th, 2026 - [v2.10.0...v2.10.1](https://github.com/zenstruck/foundry/compare/v2.10.0...v2.10.1)
