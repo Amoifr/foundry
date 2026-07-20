@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v2.10.3](https://github.com/zenstruck/foundry/releases/tag/v2.10.3)
+
+July 20th, 2026 - [v2.10.2...v2.10.3](https://github.com/zenstruck/foundry/compare/v2.10.2...v2.10.3)
+
+* c851f6d fix: defer `$em->persist()` until the object graph is wired + natural accessor directionality (#1134) by @nikophil
+
 ## [v2.10.2](https://github.com/zenstruck/foundry/releases/tag/v2.10.2)
 
 July 19th, 2026 - [v2.10.1...v2.10.2](https://github.com/zenstruck/foundry/compare/v2.10.1...v2.10.2)
