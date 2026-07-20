@@ -24,11 +24,10 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\HasLifecycleCallbacks]
 class ChainC extends Base
 {
-    #[ORM\ManyToOne(targetEntity: ChainB::class, inversedBy: 'cs')]
-    private ?ChainB $b = null;
-
     #[ORM\Column]
     public bool $hasBAtPrePersist = false;
+    #[ORM\ManyToOne(targetEntity: ChainB::class, inversedBy: 'cs')]
+    private ?ChainB $b = null;
 
     #[ORM\PrePersist]
     public function capturePrePersistState(): void

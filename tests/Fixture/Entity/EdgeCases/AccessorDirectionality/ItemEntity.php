@@ -23,10 +23,9 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\Table('accessor_directionality_item')]
 class ItemEntity extends Base
 {
+    public int $setterCalls = 0;
     #[ORM\ManyToOne(targetEntity: CategoryEntity::class, inversedBy: 'items')]
     private ?CategoryEntity $category = null;
-
-    public int $setterCalls = 0;
 
     public function getCategory(): ?CategoryEntity
     {

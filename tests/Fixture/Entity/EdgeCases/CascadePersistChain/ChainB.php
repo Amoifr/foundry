@@ -26,18 +26,17 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\HasLifecycleCallbacks]
 class ChainB extends Base
 {
+    #[ORM\Column]
+    public int $csCountAtPrePersist = 0;
+
+    #[ORM\Column]
+    public bool $hasAAtPrePersist = false;
     #[ORM\ManyToOne(targetEntity: ChainA::class, inversedBy: 'bs')]
     private ?ChainA $a = null;
 
     /** @var Collection<int, ChainC> */
     #[ORM\OneToMany(targetEntity: ChainC::class, mappedBy: 'b', cascade: ['persist', 'remove'])]
     private Collection $cs;
-
-    #[ORM\Column]
-    public int $csCountAtPrePersist = 0;
-
-    #[ORM\Column]
-    public bool $hasAAtPrePersist = false;
 
     public function __construct()
     {

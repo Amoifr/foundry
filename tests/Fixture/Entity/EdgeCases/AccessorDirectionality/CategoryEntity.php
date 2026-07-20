@@ -25,11 +25,10 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\Table('accessor_directionality_category')]
 class CategoryEntity extends Base
 {
+    public int $adderCalls = 0;
     /** @var Collection<int, ItemEntity> */
     #[ORM\OneToMany(targetEntity: ItemEntity::class, mappedBy: 'category', cascade: ['persist', 'remove'])]
     private Collection $items;
-
-    public int $adderCalls = 0;
 
     public function __construct()
     {

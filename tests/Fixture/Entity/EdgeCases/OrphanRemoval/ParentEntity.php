@@ -26,15 +26,14 @@ use Zenstruck\Foundry\Tests\Fixture\Model\Base;
 #[ORM\HasLifecycleCallbacks]
 class ParentEntity extends Base
 {
-    /** @var Collection<int, ChildEntity> */
-    #[ORM\OneToMany(targetEntity: ChildEntity::class, mappedBy: 'parent', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $children;
-
     #[ORM\Column]
     public int $childrenCount = 0;
 
     #[ORM\Column]
     public string $name = 'initial';
+    /** @var Collection<int, ChildEntity> */
+    #[ORM\OneToMany(targetEntity: ChildEntity::class, mappedBy: 'parent', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $children;
 
     public function __construct()
     {

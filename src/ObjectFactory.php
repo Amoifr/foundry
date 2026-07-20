@@ -95,16 +95,6 @@ abstract class ObjectFactory extends Factory
     }
 
     /**
-     * @internal
-     */
-    final protected function hydrator(): Hydrator
-    {
-        $instantiator = $this->instantiator();
-
-        return $instantiator instanceof Instantiator ? $instantiator->hydrator() : new Hydrator();
-    }
-
-    /**
      * @phpstan-param callable(Parameters, class-string<T>, static):Parameters $callback
      */
     final public function beforeInstantiate(callable $callback, int $priority = 0): static
@@ -165,6 +155,16 @@ abstract class ObjectFactory extends Factory
         }
 
         return $clone;
+    }
+
+    /**
+     * @internal
+     */
+    final protected function hydrator(): Hydrator
+    {
+        $instantiator = $this->instantiator();
+
+        return $instantiator instanceof Instantiator ? $instantiator->hydrator() : new Hydrator();
     }
 
     protected function normalizeParameter(string $field, mixed $value): mixed
