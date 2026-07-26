@@ -68,7 +68,9 @@ trait CreationSteps
     {
         $factory = $this->factoryResolver->factoryFor($factoryShortName);
 
-        if (!$objectName) {
+        // an empty name (e.g. an empty "_ref" cell) means the object is intentionally unnamed,
+        // but falsy names like "0" are legitimate references
+        if (null === $objectName || '' === $objectName) {
             return $factory;
         }
 

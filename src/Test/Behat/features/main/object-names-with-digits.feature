@@ -13,6 +13,10 @@ Feature: Test object names starting with digits
     Given there is a contact named "007"
     Then contact named "007" should exist
 
+  Scenario: The falsy name "0" is still a valid reference
+    Given there is a contact named "0"
+    Then contact named "0" should exist
+
   Scenario: Count assertions still work correctly alongside digit names
     Given there is a contact named "1"
     And there is a contact named "2"
