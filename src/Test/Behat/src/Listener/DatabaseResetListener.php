@@ -81,7 +81,13 @@ final class DatabaseResetListener implements EventSubscriberInterface
             StaticDriver::setKeepStaticConnections(true);
         }
 
-        if (DatabaseResetMode::MANUAL === $this->resetMode) {
+        // in pure manual mode the schema reset is deferred until the first @resetDB. With DAMA
+        // support it must happen now: once a static connection holds its transaction, a deferred
+        // DamaDatabaseResetter::resetBeforeFirstTest() would drop the database under an open
+        // transaction (metadata-lock freeze on MySQL, connection kill on PostgreSQL) and reboot
+        // the kernel in the middle of a scenario. @resetDB keeps its user-facing semantics: it
+        // rolls the static transaction back.
+        if (DatabaseResetMode::MANUAL === $this->resetMode && !$this->damaSupportEnabled) {
             return;
         }
 

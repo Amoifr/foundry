@@ -2843,6 +2843,13 @@ To use these features along with DAMA DoctrineTestBundle, enable Foundry's own D
     Also note that ``enable_dama_support: true`` requires an actual reset mode: combining it
     with ``database_reset_mode: disabled`` is a configuration error.
 
+.. note::
+
+    With ``enable_dama_support: true``, the database schema is provisioned once when the suite
+    starts, whatever the reset mode: everything then runs inside DAMA's static transaction. In
+    ``manual`` mode, the ``@resetDB`` tag keeps its meaning — it rolls the static transaction
+    back, discarding the data accumulated by the previous scenarios.
+
 Built-in Behat Context
 ~~~~~~~~~~~~~~~~~~~~~~
 
