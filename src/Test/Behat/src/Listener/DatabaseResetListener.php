@@ -148,6 +148,14 @@ final class DatabaseResetListener implements EventSubscriberInterface
             return;
         }
 
+        // same guard as the PHPUnit integration: with DAMA's native Behat extension each
+        // scenario is already wrapped in a transaction and the initial reset committed the
+        // global stories — resetBeforeEachTest() would reload them inside the transaction,
+        // duplicating the global state on every scenario
+        if (ResetDatabaseManager::canSkipSchemaReset()) {
+            return;
+        }
+
         ResetDatabaseManager::resetBeforeEachTest($this->symfonyKernel);
     }
 
