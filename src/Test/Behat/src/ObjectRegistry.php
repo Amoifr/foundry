@@ -15,6 +15,7 @@ use Symfony\Component\Uid\AbstractUid;
 use Zenstruck\Foundry\Persistence\IdentifierResolver;
 use Zenstruck\Foundry\Persistence\ProxyGenerator;
 use Zenstruck\Foundry\Story\Event\StateAddedToStory;
+use Zenstruck\Foundry\Test\Behat\Exception\CompositeIdentifierNotSupported;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectAlreadyRegistered;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 
@@ -127,12 +128,40 @@ final class ObjectRegistry
      */
     public function lastIdFor(string $factoryShortName): int|string
     {
-        $objectClass = $this->factoryShortNameResolver->targetObjectClassFor($factoryShortName);
-        $last = repository($objectClass)->lastOrFail();
-
         return $this->coerceIdToScalar(
-            $this->persistenceManager->getIdentifierValues(ProxyGenerator::unwrap($last))
+            $this->persistenceManager->getIdentifierValues(ProxyGenerator::unwrap($this->lastObjectFor($factoryShortName)))
         );
+    }
+
+    /**
+     * @throws CompositeIdentifierNotSupported
+     */
+    public function lastObjectFor(string $factoryShortName): object
+    {
+        $objectClass = $this->factoryShortNameResolver->targetObjectClassFor($factoryShortName);
+
+        return repository($objectClass)->lastOrFail($this->identifierSortFieldFor($objectClass));
+    }
+
+    /**
+     * The identifier field is not necessarily named "id" (e.g. a Uuid $uuid property). Composite
+     * identifiers are rejected: "the last row" has no single column to sort on, mirroring the
+     * "exactly one identifier" invariant enforced on values by coerceIdToScalar(). The caller
+     * (placeholder-aware) decorates the exception with the offending placeholder.
+     *
+     * @param class-string $objectClass
+     *
+     * @throws CompositeIdentifierNotSupported
+     */
+    private function identifierSortFieldFor(string $objectClass): string
+    {
+        $fields = $this->persistenceManager->getIdentifierFields($objectClass);
+
+        if (1 !== \count($fields)) {
+            throw CompositeIdentifierNotSupported::forClass($objectClass, $fields);
+        }
+
+        return $fields[0];
     }
 
     public function idFor(string $factoryShortName, string $objectName): int|string
@@ -154,9 +183,15 @@ final class ObjectRegistry
     {
         $resolved = \preg_replace_callback(
             '/<foundry:(?:lastId\(\s*(?<lastIdFactory>[^)]+?)\s*\)|id\(\s*(?<factory>[^,)]+?)\s*,\s*(?<name>[^)]+?)\s*\))>/',
-            fn(array $matches): string => (string) ('' !== ($matches['factory'] ?? '')
-                ? $this->idFor(self::unquote($matches['factory']), self::unquote($matches['name']))
-                : $this->lastIdFor(self::unquote($matches['lastIdFactory']))),
+            function(array $matches): string {
+                try {
+                    return (string) ('' !== ($matches['factory'] ?? '')
+                        ? $this->idFor(self::unquote($matches['factory']), self::unquote($matches['name']))
+                        : $this->lastIdFor(self::unquote($matches['lastIdFactory'])));
+                } catch (CompositeIdentifierNotSupported $e) {
+                    throw new \InvalidArgumentException("The \"{$matches[0]}\" placeholder cannot be resolved: {$e->getMessage()}", previous: $e);
+                }
+            },
             $value
         ) ?? $value;
 

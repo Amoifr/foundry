@@ -20,4 +20,11 @@ interface IdentifierResolver
      * @return array<string, mixed>
      */
     public function getIdentifierValues(object $object): array;
+
+    /**
+     * @param class-string $class
+     *
+     * @return list<string> the identifier field names
+     */
+    public function getIdentifierFields(string $class): array;
 }

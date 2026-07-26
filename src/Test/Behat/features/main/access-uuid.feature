@@ -15,3 +15,10 @@ Feature: Test accessing Uuid-based entity ids
     Given there is an "entity with uid" named "my-uid-entity"
     When I am on "/<foundry:id(entity with uid, my-uid-entity)>"
     Then the response status code should be 404
+
+  Scenario: lastId works when the identifier field is not named "id"
+    Given there is an "entity with custom id" named "the object"
+    # resolving the placeholder sorts on the actual identifier field ("uuid"):
+    # a hardcoded "id" sort field would fail with an "Unrecognized field" error
+    When I am on "/<foundry:lastId(entity with custom id)>"
+    Then the response status code should be 404

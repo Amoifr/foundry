@@ -17,10 +17,10 @@ use Behat\Gherkin\Node\TableNode;
 use Behat\Testwork\Call\Call;
 use Behat\Testwork\Call\Filter\CallFilter;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Zenstruck\Foundry\Test\Behat\Exception\CompositeIdentifierNotSupported;
 use Zenstruck\Foundry\Test\Behat\Exception\InvalidObjectParameter;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 
-use function Zenstruck\Foundry\Persistence\repository;
 
 /**
  * @internal
@@ -155,7 +155,11 @@ final class FoundryCallFilter implements CallFilter
     private function resolveExplicitObjectReference(string $propertyName, string $value): ?object
     {
         if (\preg_match('/^<foundry:lastObject\(\s*(?<factoryShortName>[^)]+?)\s*\)>$/', $value, $matches)) {
-            return repository($this->factoryResolver()->targetObjectClassFor($matches['factoryShortName']))->lastOrFail();
+            try {
+                return $this->objectRegistry()->lastObjectFor($matches['factoryShortName']);
+            } catch (CompositeIdentifierNotSupported $e) {
+                throw InvalidObjectParameter::compositeIdentifier($propertyName, $e);
+            }
         }
 
         if (!\preg_match('/^<foundry:object\(\s*(?<factoryShortName>[^,)]+?)\s*,\s*(?<objectName>[^)]+?)\s*\)>$/', $value, $matches)) {

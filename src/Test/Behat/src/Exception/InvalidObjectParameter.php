@@ -22,6 +22,11 @@ final class InvalidObjectParameter extends \RuntimeException
         return new self("A reference to an object cannot be resolved in the table, at column \"{$column}\": {$previous->getMessage()}", previous: $previous);
     }
 
+    public static function compositeIdentifier(string $column, CompositeIdentifierNotSupported $previous): self
+    {
+        return new self("The <foundry:lastObject()> reference at column \"{$column}\" cannot be resolved: {$previous->getMessage()}", previous: $previous);
+    }
+
     public static function invalidDate(string $column, string $invalidDate, \Throwable $previous): self
     {
         return new self("Invalid date given \"{$invalidDate}\", at column \"{$column}\"", previous: $previous);

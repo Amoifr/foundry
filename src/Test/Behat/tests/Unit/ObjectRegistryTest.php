@@ -19,6 +19,7 @@ use Zenstruck\Foundry\Persistence\IdentifierResolver;
 use Zenstruck\Foundry\Persistence\Proxy;
 use Zenstruck\Foundry\Persistence\ProxyRepositoryDecorator;
 use Zenstruck\Foundry\Story\Event\StateAddedToStory;
+use Zenstruck\Foundry\Test\Behat\Exception\CompositeIdentifierNotSupported;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectAlreadyRegistered;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 use Zenstruck\Foundry\Test\Behat\FactoryShortNameResolver;
@@ -213,6 +214,36 @@ final class ObjectRegistryTest extends TestCase
         $this->expectExceptionMessage('Cannot resolve the id: the entity must have exactly one identifier value, got 2 ("id1", "id2").');
 
         $registry->idFor('user', 'john');
+    }
+
+    #[Test]
+    public function it_rejects_composite_identifiers_when_resolving_the_last_object(): void
+    {
+        $persistenceManager = $this->createStub(IdentifierResolver::class);
+        $persistenceManager->method('getIdentifierFields')->willReturn(['foo', 'bar']);
+
+        $registry = new ObjectRegistry($this->resolver, $persistenceManager);
+
+        // a placeholder-agnostic domain exception: lastObjectFor() is also public API, callers
+        // that know the placeholder syntax decorate it. Rejected before any database query.
+        $this->expectException(CompositeIdentifierNotSupported::class);
+        $this->expectExceptionMessage('must be identified by a single field to resolve its latest record, got 2 ("foo", "bar").');
+
+        $registry->lastObjectFor('user');
+    }
+
+    #[Test]
+    public function it_decorates_composite_identifier_errors_with_the_last_id_placeholder(): void
+    {
+        $persistenceManager = $this->createStub(IdentifierResolver::class);
+        $persistenceManager->method('getIdentifierFields')->willReturn(['foo', 'bar']);
+
+        $registry = new ObjectRegistry($this->resolver, $persistenceManager);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "<foundry:lastId(user)>" placeholder cannot be resolved: ');
+
+        $registry->resolveIdPlaceholders('/users/<foundry:lastId(user)>');
     }
 
     #[Test]
