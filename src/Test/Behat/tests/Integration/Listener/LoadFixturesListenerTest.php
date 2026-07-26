@@ -85,7 +85,7 @@ final class LoadFixturesListenerTest extends KernelTestCase
         $listener->loadFixtureIfTagged($event);
 
         CategoryFactory::assert()->count(1);
-        $this->objectRegistry()->has(Category::class, 'category fixture');
+        self::assertTrue($this->objectRegistry()->has(Category::class, 'category fixture'));
     }
 
     public static function singleCategoryFixtureLoadedProvider(): iterable
@@ -105,8 +105,8 @@ final class LoadFixturesListenerTest extends KernelTestCase
         $listener->loadFixtureIfTagged($event);
 
         CategoryFactory::assert()->count(2);
-        $this->objectRegistry()->has(Category::class, 'category fixture');
-        $this->objectRegistry()->has(Contact::class, 'john-doe');
+        self::assertTrue($this->objectRegistry()->has(Category::class, 'category fixture'));
+        self::assertTrue($this->objectRegistry()->has(Contact::class, 'john-doe'));
     }
 
     #[Test]
