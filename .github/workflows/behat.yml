@@ -2,9 +2,15 @@ name: Behat
 
 on:
   push:
+    # the Behat suite runs against the checkout's src/ (symlinked into the vendor dir by
+    # symlink-vendor.sh on post-install) and against the shared test fixtures: a change in
+    # the main package must also trigger this workflow
     paths: &paths
       - .github/workflows/behat.yml
-      - src/Test/Behat/**
+      - src/**
+      - config/**
+      - tests/Fixture/**
+      - composer.json
   pull_request:
     paths: *paths
   schedule:
