@@ -122,16 +122,33 @@ override-steps:
         Zenstruck\Foundry\Test\Behat\FoundryExtension:
             database_reset_mode: scenario
             enable_dama_support: true
-            steps:
-                'there is a(n) :factoryShortName named :objectName': 'create a :factoryShortName called :objectName'
-                'there are :factoryShortName with:': 'the following :factoryShortName exist:'
-                # a table step can also be re-worded with a regex using anonymous capture groups
-                'there is a(n) :factoryShortName with:': '/^an? (\S+) exists with:$/'
-                # transformations (#[Transform]) go through the same translator: they can be re-worded too
-                '/(.*)<foundry:lastId\(\s*([^)]+?)\s*\)>(.*)/': '/(.*)\[lastId\(([^)]+?)\)\](.*)/'
 
     suites:
         main: false
         override-steps:
             paths: [features/override-steps]
-            contexts: *common_contexts
+            contexts:
+                - Behat\MinkExtension\Context\MinkContext
+                # composed from the step traits and used instead of FoundryContext:
+                # re-defined methods really replace the built-in wordings
+                - Zenstruck\Foundry\Test\Behat\Tests\Fixture\OverridingFoundryContext
+                - Zenstruck\Foundry\Test\Behat\Tests\Fixture\TestFoundryContext
+
+granular-contexts:
+    extensions:
+        Zenstruck\Foundry\Test\Behat\FoundryExtension:
+            database_reset_mode: scenario
+            enable_dama_support: true
+
+    suites:
+        main: false
+        granular-contexts:
+            paths: [features/granular-contexts]
+            contexts:
+                # only a subset of the built-in contexts: the assertion steps are not
+                # loaded, their wordings are free for the user's own definitions
+                - Behat\MinkExtension\Context\MinkContext
+                - Zenstruck\Foundry\Test\Behat\FoundryCreationContext
+                - Zenstruck\Foundry\Test\Behat\FoundryPlaceholderContext
+                - Zenstruck\Foundry\Test\Behat\Tests\Fixture\TestFoundryContext
+                - Zenstruck\Foundry\Test\Behat\Tests\Fixture\CustomCountContext

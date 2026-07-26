@@ -12,19 +12,13 @@
 namespace Zenstruck\Foundry\Test\Behat;
 
 /**
- * All-in-one context providing every built-in Foundry step and transformation.
- *
- * To use a subset of the steps, use FoundryCreationContext, FoundryAssertionContext
- * and/or FoundryPlaceholderContext instead. To replace the wording of some steps,
- * compose your own context from the step traits (see the documentation).
+ * Context providing only the built-in "Given" steps creating Foundry objects.
  *
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */
-final class FoundryContext implements FoundryContextInterface
+final class FoundryCreationContext implements FoundryContextInterface
 {
-    use AssertionSteps;
     use CreationSteps;
-    use PlaceholderTransforms;
 
     public function __construct(
         private readonly FactoryShortNameResolver $factoryResolver,

@@ -25,3 +25,8 @@ Feature: Overriding built-in step definitions
     Given create a contact called "john"
     When I am on "/[lastId(contact)]"
     Then the response status code should be 404
+
+  Scenario: Re-declaring the built-in pattern keeps the wording but changes the implementation (!)
+    Given create a contact called "john"
+    Then the contact with id "<foundry:id(contact, john)>" should exist
+    Then a "LogicException" exception should be thrown containing message "overridden implementation called"

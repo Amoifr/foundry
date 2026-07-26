@@ -190,7 +190,7 @@ final class DatabaseResetListener implements EventSubscriberInterface
     }
 
     /**
-     * Unlike @resetDB (whose feature-level and scenario-level meanings differ), a feature-level
+     * Unlike @resetDB(whose feature-level and scenario-level meanings differ), a feature-level.
      * @noResetDB is inherited by every scenario of the feature.
      */
     private function hasNoResetDbTag(BeforeFeatureTested|BeforeScenarioTested $event): bool

@@ -2793,6 +2793,7 @@ The ``database_reset_mode`` option controls when the database is reset:
 .. tip::
 
     With ``scenario`` mode, you can skip the reset for a specific scenario with the ``@noResetDB`` tag.
+    Used on a **feature**, the tag is inherited: none of the feature's scenarios resets the database.
 
     .. code-block:: gherkin
 
@@ -2803,13 +2804,21 @@ The ``database_reset_mode`` option controls when the database is reset:
 .. tip::
 
     When using ``database_reset_mode: manual`` or ``database_reset_mode: feature``,
-    you can force a reset using the ``@resetDB`` tag:
+    you can force a reset using the ``@resetDB`` tag. Unlike ``@noResetDB``, this tag is not
+    inherited: on a **scenario** the database is reset before that scenario, on a **feature**
+    it is reset once before the feature.
 
     .. code-block:: gherkin
 
         @resetDB
         Scenario: Start with fresh database
           Then 0 contacts should exist
+
+.. note::
+
+    Redundant or contradictory tag usages are rejected: ``@resetDB`` with the ``scenario`` mode,
+    ``@resetDB`` on a feature with the ``feature`` mode, ``@noResetDB`` with the ``manual`` or
+    ``feature`` modes, and both tags on the same scenario or feature.
 
 DAMA DoctrineTestBundle Support
 ...............................
@@ -2831,6 +2840,8 @@ To use these features along with DAMA DoctrineTestBundle, enable Foundry's own D
 
     When using Foundry's DAMA support, do not enable the native DAMA Behat extension
     (``DAMA\DoctrineTestBundle\Behat\ServiceContainer\DoctrineExtension``).
+    Also note that ``enable_dama_support: true`` requires an actual reset mode: combining it
+    with ``database_reset_mode: disabled`` is a configuration error.
 
 Built-in Behat Context
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -2845,6 +2856,28 @@ To use it, add the following to your ``behat.yaml``:
             main:
                 contexts:
                     - Zenstruck\Foundry\Test\Behat\FoundryContext
+
+``FoundryContext`` provides every built-in step and transformation described below. If you only want a subset of
+them, load one or several granular contexts instead:
+
+.. code-block:: yaml
+
+    default:
+        suites:
+            main:
+                contexts:
+                    # the "Given" steps creating objects
+                    - Zenstruck\Foundry\Test\Behat\FoundryCreationContext
+                    # the "Then" steps asserting on objects and on the database
+                    - Zenstruck\Foundry\Test\Behat\FoundryAssertionContext
+                    # the transformations resolving <foundry:...> id placeholders
+                    - Zenstruck\Foundry\Test\Behat\FoundryPlaceholderContext
+
+.. tip::
+
+    These contexts are thin compositions of the ``CreationSteps``, ``AssertionSteps`` and
+    ``PlaceholderTransforms`` traits: you can compose your own context from the same traits, e.g. to replace the
+    wording of some built-in steps, see `Overriding built-in step definitions`_.
 
 Create objects
 ..............
@@ -2870,7 +2903,11 @@ Create objects
       | A    | John Doe |
       | B    | Jane Doe |
 
-The ``_ref`` column is a special column that allows you to name the created objects for later reference.
+Naming an object stores it in an **object registry**: later steps can then reference it by its name,
+as a relation value, in assertions or through id placeholders (all described below).
+
+The ``_ref`` column is a special column that allows you to name the created objects for later reference;
+leave the cell empty for objects you don't need to reference.
 
 .. tip::
 
@@ -2909,13 +2946,13 @@ When using properties in Gherkin tables, Foundry automatically converts string v
       | title   | category | publishedAt | status       | body |
       | My Post | tech     | 2026-01-15  | published    | null |
 
-- **Object references**: If the property type has a registered factory, Foundry looks up the object by name in the registry
-  (e.g. ``tech`` resolves to the ``Category`` object named "tech") - see below
+- **Object references**: If the property type has a registered factory, the value is treated as an object name
+  looked up in the registry — see `Referencing objects in another object`_ below
 - **null**: The literal string ``null`` is converted to PHP ``null``
 - **Booleans**: ``true`` and ``false`` are converted to PHP booleans
 - **Dates**: If the property type implements ``DateTimeInterface``, the value is parsed using PHP's native date parsing
   (e.g. ``2026-01-15``, ``yesterday``, ``+1 week``)
-- **Enums**: If the property type is a ``BackedEnum``, the value is resolved using ``::from()``
+- **Enums**: If the property type is a ``BackedEnum``, the value is resolved from its string or integer backing value
 
 .. note::
 
@@ -2938,17 +2975,38 @@ the category named "tech" in the registry.
 
 .. tip::
 
-    If for any reason the property type cannot be resolved, you can use the special syntax ``<foundry:ref(type, name)>``:
+    If for any reason the property type cannot be resolved, you can use the special syntax ``<foundry:object(type, name)>``:
 
     .. code-block:: gherkin
 
         Given there is a category named "tech"
         Given there is a post named "my-post" with:
-          | title   | category                  |
-          | My Post | <foundry:ref(category, tech)>     |
+          | title   | category                         |
+          | My Post | <foundry:object(category, tech)> |
 
-    The ``<foundry:ref(type, name)>`` syntax is an escape hatch for edge cases where automatic type resolution fails.
+    The ``<foundry:object(type, name)>`` syntax is an escape hatch for edge cases where automatic type resolution fails.
     Prefer using automatic resolution (just the object name) whenever possible, as it is cleaner and more readable.
+
+You can also reference the **latest object** of a type with ``<foundry:lastObject(type)>``, without naming it.
+It is resolved from the database (the row with the highest id), so it also sees objects created by the
+application under test — like ``<foundry:lastId(type)>`` below. It comes in handy in assertion tables:
+
+.. code-block:: gherkin
+
+    Given there is a category
+    And there is a post named "my-post" with:
+      | title   | category                       |
+      | My Post | <foundry:lastObject(category)> |
+
+    Then post named "my-post" should have properties:
+      | category                       |
+      | <foundry:lastObject(category)> |
+
+.. note::
+
+    ``<foundry:object(...)>`` and ``<foundry:lastObject(...)>`` only work inside table cells. Behat never
+    applies ``#[Transform]`` to the content of tables: the id placeholders described below are only
+    resolved in plain step arguments.
 
 .. note::
 
@@ -2995,12 +3053,15 @@ Assertions
       | name |
       | Jane |
 
-    # assert by id, either a literal one or an id placeholder (see below):
+    # assert by id, either a literal one or an id placeholder (see below).
+    # Like names, ids must be quoted when they contain a space:
     Then the contact with id 42 should exist
-    Then the contact with id "<foundry:lastId(contact)>" should have properties:
+    Then the contact with id "<foundry:id(contact, john)>" should have properties:
       | name     |
       | John Doe |
     Then the contact with id 42 should not exist
+
+.. _accessing-ids-of-created-objects:
 
 Accessing ids of created objects
 ................................
@@ -3023,20 +3084,11 @@ Accessing ids of created objects
 
 .. tip::
 
-    These placeholders can also be used inside table cells, and several placeholders can be combined
-    in a single step argument:
+    Several placeholders can be combined in a single step argument:
 
     .. code-block:: gherkin
 
-        Given there is a category named "tech"
-        Given there is a post named "my-post" with:
-          | title   | externalReference       |
-          | My Post | ref-<foundry:id(category, tech)> |
-
-    Cell placeholders are resolved **before** the step runs: they only see objects created by previous
-    steps (a row cannot reference another row of the same table, and ``<foundry:lastId(...)>`` in a creation
-    table refers to the last row existing before that step). They always use the canonical ``<...>``
-    syntax, even when the ``#[Transform]`` patterns have been re-worded.
+        When I am on "/categories/<foundry:id(category, tech)>/posts/<foundry:lastId(post)>"
 
 .. warning::
 
@@ -3058,22 +3110,79 @@ Accessing ids of created objects
     accessed until the next database reset occurs, and they are cleared after each feature.
     ``<foundry:lastId(factory)>`` only relies on the database content.
 
+To sum up — Behat resolves the id placeholders with ``#[Transform]``, which is applied to plain step
+arguments but never to table cells, hence the two families of placeholders:
+
+.. list-table::
+    :header-rows: 1
+
+    * - Placeholder
+      - Works in
+      - Resolved from
+    * - ``<foundry:object(type, name)>``
+      - Table cells only
+      - Object registry
+    * - ``<foundry:lastObject(type)>``
+      - Table cells only
+      - Database (row with the highest id)
+    * - ``<foundry:id(type, name)>``
+      - Plain step arguments only
+      - Object registry
+    * - ``<foundry:lastId(type)>``
+      - Plain step arguments only
+      - Database (row with the highest id)
+
 Overriding built-in step definitions
 ....................................
 
-If the built-in step definitions don't fit your need or conflict with your own contexts and step definitions, you can
-**re-word** them right from the extension configuration, without writing any PHP. Map each built-in pattern to your own
-wording under the ``steps`` key:
+If some built-in step definitions don't fit your need — a wording is too generic and conflicts with your own steps,
+or you simply want another phrasing — compose your own context from the step traits and **re-define** the methods you
+want to change. A method re-defined by the composing class takes precedence over the trait one, attributes included:
+your wording really **replaces** the built-in one. Alias the trait method as ``private`` to keep access to the
+built-in implementation (Behat only reads public methods, so the built-in wording carried by the alias stays
+invisible)::
+
+    // tests/Behat/CustomFoundryContext.php
+    namespace App\Tests\Behat;
+
+    use Behat\Step\Given;
+    use Zenstruck\Foundry\Test\Behat\AssertionSteps;
+    use Zenstruck\Foundry\Test\Behat\CreationSteps;
+    use Zenstruck\Foundry\Test\Behat\FactoryShortNameResolver;
+    use Zenstruck\Foundry\Test\Behat\FoundryContextInterface;
+    use Zenstruck\Foundry\Test\Behat\ObjectRegistry;
+    use Zenstruck\Foundry\Test\Behat\PlaceholderTransforms;
+
+    final class CustomFoundryContext implements FoundryContextInterface
+    {
+        use AssertionSteps;
+        use CreationSteps {
+            createObject as private builtinCreateObject;
+        }
+        use PlaceholderTransforms;
+
+        public function __construct(
+            private readonly FactoryShortNameResolver $factoryResolver,
+            private readonly ObjectRegistry $objectRegistry,
+        ) {
+        }
+
+        #[Given('create a :factoryShortName called :objectName')]
+        public function createObject(string $factoryShortName, ?string $objectName = null): void
+        {
+            $this->builtinCreateObject($factoryShortName, $objectName);
+        }
+    }
+
+Then use your context **instead of** ``FoundryContext`` in your ``behat.yaml``:
 
 .. code-block:: yaml
 
     default:
-        extensions:
-            Zenstruck\Foundry\Test\Behat\FoundryExtension:
-                steps:
-                    # "built-in pattern": "your wording"
-                    'there is a(n) :factoryShortName named :objectName': 'create a :factoryShortName called :objectName'
-                    'there are :factoryShortName with:': 'the following :factoryShortName exist:'
+        suites:
+            main:
+                contexts:
+                    - App\Tests\Behat\CustomFoundryContext
 
 You can now write:
 
@@ -3081,33 +3190,34 @@ You can now write:
 
     Given create a contact called "john"
 
-The built-in wording is fully replaced: only the patterns you override change, every other built-in step keeps working
-(and you automatically benefit from new built-in steps added in the future).
+The built-in wordings of ``createObject`` (``there is a(n) :factoryShortName``, …) don't exist anymore in this
+context, while every step you don't re-define keeps its built-in wording. Everything being plain PHP attributes on
+real methods, your IDE resolves the wordings, autocompletes them in ``.feature`` files and navigates to the methods.
 
-For larger customizations, you can point to one or several translation catalogues (``xliff``, ``yaml`` or ``php``) instead
-of (or in addition to) the inline map:
+Two more customizations fall out of the same mechanism:
 
-.. code-block:: yaml
+* **change the implementation** behind a built-in wording: re-define the method and re-declare the built-in pattern
+  (there is no duplicate, the trait one is gone);
+* **remove a step**: re-define the method without any step attribute.
 
-    default:
-        extensions:
-            Zenstruck\Foundry\Test\Behat\FoundryExtension:
-                translations: '%paths.base%/tests/behat/foundry-steps.xliff'
+The built-in ``#[Transform]`` methods resolving the :ref:`id placeholders <accessing-ids-of-created-objects>` can be
+replaced the same way — here the placeholder syntax becomes ``[lastId(...)]`` in your feature files::
 
-.. code-block:: xml
+    use Behat\Transformation\Transform;
+    use Zenstruck\Foundry\Test\Behat\PlaceholderTransforms;
 
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!-- tests/behat/foundry-steps.xliff -->
-    <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-        <file source-language="en" datatype="plaintext" original="foundry-steps">
-            <body>
-                <trans-unit id="1">
-                    <source>there is a(n) :factoryShortName named :objectName</source>
-                    <target>create a :factoryShortName called :objectName</target>
-                </trans-unit>
-            </body>
-        </file>
-    </xliff>
+    use PlaceholderTransforms {
+        transformLastIdForSpecificObject as private builtinTransformLastIdForSpecificObject;
+    }
+
+    #[Transform('/(.*)\[lastId\(([^)]+?)\)\](.*)/')]
+    public function transformLastIdForSpecificObject(string $before, string $factoryShortName, string $after): string
+    {
+        return $this->builtinTransformLastIdForSpecificObject($before, $factoryShortName, $after);
+    }
+
+Delegating to the built-in implementation is enough, whatever your custom syntax looks like: it rebuilds
+the canonical ``<foundry:lastId(...)>`` placeholder from the captured groups before resolving it.
 
 .. warning::
 
@@ -3115,18 +3225,6 @@ of (or in addition to) the inline map:
     and ``:objectName`` for turnip patterns, ``(?P<factoryShortName>...)`` and ``(?P<objectName>...)`` for regex
     patterns). Named capture groups are recommended; anonymous groups also work as long as they appear in the
     same order as the underlying method parameters.
-
-.. note::
-
-    Overrides apply to the language of your ``.feature`` files (the ``# language:`` header, defaulting to ``en``), **not**
-    to the CLI ``--lang`` option. If your features are written in another language, set the ``locale`` option accordingly:
-
-    .. code-block:: yaml
-
-        Zenstruck\Foundry\Test\Behat\FoundryExtension:
-            locale: fr
-            steps:
-                'there is a(n) :factoryShortName named :objectName': 'il existe un(e) :factoryShortName nommé :objectName'
 
 Loading Fixtures with Tags
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3166,6 +3264,9 @@ Then use the ``@withFixture`` tag to load a Story before a scenario:
       Then contact named "john" should have properties:
         | name     |
         | John     |
+
+The tag can be repeated to load several fixtures (``@withFixture(users) @withFixture(products)``),
+and it also accepts an ``#[AsFixture]`` group name to load all the stories of that group at once.
 
 The ``@withFixture`` tag can also be used on a **feature**: the fixtures are then loaded for every
 scenario in that feature, and reloaded after each database reset and at each new feature. Note that with

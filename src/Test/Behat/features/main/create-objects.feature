@@ -63,14 +63,31 @@ Feature: Test objects creation
     And there is an address named "the address"
     And there is a contact named A with:
       | name     | category                    | address                     |
-      | John Doe | <foundry:ref(category, MyCategory)> | <foundry:ref(address, the address)> |
+      | John Doe | <foundry:object(category, MyCategory)> | <foundry:object(address, the address)> |
     When I am on "/"
     Then contact named A should have properties:
       | name     | category                    | address                     |
-      | John Doe | <foundry:ref(category, MyCategory)> | <foundry:ref(address, the address)> |
+      | John Doe | <foundry:object(category, MyCategory)> | <foundry:object(address, the address)> |
     Then 1 contact should exist
     Then 1 category should exist
     Then 1 address should exist
+
+  Scenario: Can reference the latest object of a type
+    Given there is a category named "old"
+    And there is a category named "new"
+    And there is a contact named A with:
+      | name     | category                       |
+      | John Doe | <foundry:lastObject(category)> |
+    # the expected side resolves through the registry by name, independently from
+    # the database: a lastObject resolving to anything but the latest category fails here
+    Then contact named A should have properties:
+      | category                        |
+      | <foundry:object(category, new)> |
+    # the previous assertion pinned the actual relation to "new": this one now
+    # discriminates lastObject used on the expected side
+    Then contact named A should have properties:
+      | category                       |
+      | <foundry:lastObject(category)> |
 
   Scenario: Can reference another object with short syntax
     Given there is a category named MyCategory

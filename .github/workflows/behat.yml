@@ -80,6 +80,9 @@ jobs:
       - name: Overriding built-in step definitions
         run: vendor/bin/behat --colors -vvv --profile=override-steps
 
+      - name: Using a subset of the built-in contexts
+        run: vendor/bin/behat --colors -vvv --profile=granular-contexts
+
   phpunit:
     name: PHPUnit - P:${{ matrix.php }}, S:${{ matrix.symfony }}${{ matrix.deps == 'lowest' && ' (lowest)' || '' }}
     runs-on: ubuntu-latest

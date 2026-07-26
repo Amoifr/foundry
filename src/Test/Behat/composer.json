@@ -52,6 +52,7 @@
     "symfony/dotenv": "^6.4|^7.0",
     "symfony/flex": "^2.10",
     "symfony/framework-bundle": "^6.4|^7.0",
+    "symfony/process": "^6.4|^7.0",
     "symfony/uid": "^6.4|^7.0",
     "yceruto/behat-extension": "^1.0.2"
   },

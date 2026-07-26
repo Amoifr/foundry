@@ -286,7 +286,7 @@ final class DatabaseResetListenerTest extends KernelTestCase
     private function rebootFoundry(): void
     {
         if (!Configuration::isBooted()) {
-            Configuration::boot(fn() => self::getContainer()->get('.zenstruck_foundry.configuration')); // @phpstan-ignore argument.type
+            Configuration::boot(static fn() => self::getContainer()->get('.zenstruck_foundry.configuration')); // @phpstan-ignore argument.type
         }
     }
 

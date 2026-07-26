@@ -82,22 +82,25 @@ Feature: Test persisting entities
     Given there is a "generic entity" named "the object" with:
       | prop1 |
       | foo   |
+    # an unresolved first placeholder would not even match the /orm/update/{id} route;
+    # the exact multi-substitution is covered by ObjectRegistryTest
     When I am on "/orm/update/<foundry:id(generic entity, the object)>/bar-<foundry:lastId(generic entity)>"
     Then the response status code should be 200
-    Then "generic entity" named "the object" should have properties:
-      | prop1                        |
-      | bar-<foundry:lastId(generic entity)> |
 
-  Scenario: Can use id placeholders in table cells
-    Given there is a "generic entity" named "first" with:
+  Scenario Outline: Foundry placeholders coexist with scenario outline tokens
+    Given there is a "generic entity" named "the object" with:
       | prop1 |
       | foo   |
-    Given there is a "generic entity" named "second" with:
-      | prop1                           |
-      | ref-<foundry:id(generic entity, first)> |
-    Then "generic entity" named "second" should have properties:
-      | prop1                           |
-      | ref-<foundry:id(generic entity, first)> |
+    When I am on "/orm/update/<foundry:id(generic entity, the object)>/<newValue>"
+    Then the response status code should be 200
+    Then "generic entity" named "the object" should have properties:
+      | prop1      |
+      | <newValue> |
+
+    Examples:
+      | newValue |
+      | bar      |
+      | baz      |
 
   Scenario: Assertions are database-backed
     Given there is a "generic entity" named "the object" with:

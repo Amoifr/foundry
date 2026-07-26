@@ -20,6 +20,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Zenstruck\Foundry\Test\Behat\Exception\InvalidObjectParameter;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 
+use function Zenstruck\Foundry\Persistence\repository;
+
 /**
  * @internal
  *
@@ -48,7 +50,7 @@ final class FoundryCallFilter implements CallFilter
 
         $reflection = $call->getCallee()->getReflection();
 
-        if (!$reflection instanceof \ReflectionMethod || FoundryContext::class !== $reflection->class) {
+        if (!$reflection instanceof \ReflectionMethod || !\is_a($reflection->class, FoundryContextInterface::class, allow_string: true)) {
             return $call;
         }
 
@@ -138,8 +140,6 @@ final class FoundryCallFilter implements CallFilter
                 continue;
             }
 
-            $value = $this->objectRegistry()->resolveIdPlaceholders($value);
-
             $normalized[$propertyName] = match (true) {
                 'null' === $value => null,
                 'true' === $value => true,
@@ -154,7 +154,11 @@ final class FoundryCallFilter implements CallFilter
 
     private function resolveExplicitObjectReference(string $propertyName, string $value): ?object
     {
-        if (!\preg_match('/^<foundry:ref\((?<factoryShortName>[^,]+), (?<objectName>[^)]+)\)>$/', $value, $matches)) {
+        if (\preg_match('/^<foundry:lastObject\(\s*(?<factoryShortName>[^)]+?)\s*\)>$/', $value, $matches)) {
+            return repository($this->factoryResolver()->targetObjectClassFor($matches['factoryShortName']))->lastOrFail();
+        }
+
+        if (!\preg_match('/^<foundry:object\(\s*(?<factoryShortName>[^,)]+?)\s*,\s*(?<objectName>[^)]+?)\s*\)>$/', $value, $matches)) {
             return null;
         }
 
