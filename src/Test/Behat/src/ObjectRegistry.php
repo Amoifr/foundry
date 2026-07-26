@@ -33,6 +33,14 @@ final class ObjectRegistry
     /** @var array<class-string, array<string, object>> */
     private static array $objects = [];
 
+    /**
+     * The StateAddedToStory listener is compiled into any test-env container where
+     * FriendsOfBehatSymfonyExtensionBundle is registered ("behat.service_container" is a synthetic
+     * definition, present even when the kernel is booted by PHPUnit). Story states must only be
+     * captured while a Behat exercise is running: BootConfigurationListener flips this flag.
+     */
+    private static bool $capturingStoryStates = false;
+
     public function __construct(
         private readonly FactoryShortNameResolver $factoryShortNameResolver,
         private readonly IdentifierResolver $persistenceManager,
@@ -44,7 +52,21 @@ final class ObjectRegistry
      */
     public function storeAfterStateAddedToStory(StateAddedToStory $event): void
     {
+        if (!self::$capturingStoryStates) {
+            return;
+        }
+
         $this->store($event->object, $event->name);
+    }
+
+    public static function startCapturingStoryStates(): void
+    {
+        self::$capturingStoryStates = true;
+    }
+
+    public static function stopCapturingStoryStates(): void
+    {
+        self::$capturingStoryStates = false;
     }
 
     public function store(object $object, string $objectName): void

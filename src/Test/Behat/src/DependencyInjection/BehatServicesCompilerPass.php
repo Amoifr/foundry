@@ -25,7 +25,9 @@ final class BehatServicesCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         if (!$container->has('behat.service_container')) {
-            // we're not in a Behat context
+            // FriendsOfBehatSymfonyExtensionBundle is not registered in this kernel. When it is,
+            // this synthetic definition exists at compile time even for containers booted by
+            // PHPUnit: the services below must stay inert outside a Behat run (see ObjectRegistry).
             return;
         }
 

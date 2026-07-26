@@ -45,6 +45,11 @@ final class ObjectRegistryTest extends TestCase
         $this->registry->reset();
     }
 
+    protected function tearDown(): void
+    {
+        ObjectRegistry::stopCapturingStoryStates();
+    }
+
     #[Test]
     public function it_stores_an_object(): void
     {
@@ -152,6 +157,8 @@ final class ObjectRegistryTest extends TestCase
     #[Test]
     public function it_stores_object_from_state_added_event(): void
     {
+        ObjectRegistry::startCapturingStoryStates();
+
         $user = new User(id: 1, name: 'John');
         $event = new StateAddedToStory($user, 'john');
 
@@ -164,6 +171,8 @@ final class ObjectRegistryTest extends TestCase
     #[Test]
     public function it_throws_when_storing_duplicate_from_story_event(): void
     {
+        ObjectRegistry::startCapturingStoryStates();
+
         $user1 = new User(id: 1, name: 'John');
         $user2 = new User(id: 2, name: 'Jane');
 
@@ -176,6 +185,17 @@ final class ObjectRegistryTest extends TestCase
         $this->expectExceptionMessage('Object "duplicate" is already registered for class "Zenstruck\Foundry\Test\Behat\Tests\Unit\Test\Behat\User".');
 
         $this->registry->storeAfterStateAddedToStory($event2);
+    }
+
+    #[Test]
+    public function it_ignores_story_state_events_outside_a_behat_exercise(): void
+    {
+        $event = new StateAddedToStory(new User(id: 1, name: 'John'), 'john');
+
+        $this->registry->storeAfterStateAddedToStory($event);
+        $this->registry->storeAfterStateAddedToStory($event);
+
+        self::assertFalse($this->registry->has(User::class, 'john'));
     }
 
     #[Test]

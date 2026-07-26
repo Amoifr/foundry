@@ -31,7 +31,16 @@ final class LoadFixturesListenerTest extends KernelTestCase
 {
     protected function setUp(): void
     {
+        // simulate a running Behat exercise, like BootConfigurationListener does
+        ObjectRegistry::startCapturingStoryStates();
         $this->objectRegistry()->reset();
+    }
+
+    protected function tearDown(): void
+    {
+        ObjectRegistry::stopCapturingStoryStates();
+
+        parent::tearDown();
     }
 
     /**

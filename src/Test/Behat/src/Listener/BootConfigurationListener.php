@@ -34,7 +34,7 @@ final class BootConfigurationListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            ExerciseCompleted::BEFORE => ['bootFoundry', 100],
+            ExerciseCompleted::BEFORE => [['startCapturingStoryStates', 200], ['bootFoundry', 100]],
             ExerciseCompleted::AFTER => ['shutdownFoundry', -100],
 
             FeatureTested::BEFORE => ['bootFoundry', 100],
@@ -56,8 +56,18 @@ final class BootConfigurationListener implements EventSubscriberInterface
         );
     }
 
+    /**
+     * Story states must only reach the ObjectRegistry during a Behat exercise: the listener
+     * registered on StateAddedToStory also lives in the container PHPUnit boots (see ObjectRegistry).
+     */
+    public function startCapturingStoryStates(): void
+    {
+        ObjectRegistry::startCapturingStoryStates();
+    }
+
     public function shutdownFoundry(): void
     {
+        ObjectRegistry::stopCapturingStoryStates();
         Configuration::shutdown();
     }
 
