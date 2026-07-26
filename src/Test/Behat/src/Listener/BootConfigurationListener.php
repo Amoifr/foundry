@@ -34,7 +34,7 @@ final class BootConfigurationListener implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            ExerciseCompleted::BEFORE => [['startCapturingStoryStates', 200], ['bootFoundry', 100]],
+            ExerciseCompleted::BEFORE => [['startCapturingStoryStates', 200], ['bootFoundryForExercise', 100]],
             ExerciseCompleted::AFTER => ['shutdownFoundry', -100],
 
             FeatureTested::BEFORE => ['bootFoundry', 100],
@@ -52,6 +52,19 @@ final class BootConfigurationListener implements EventSubscriberInterface
     public function startScenario(): void
     {
         ObjectRegistry::startScenario();
+    }
+
+    /**
+     * ZenstruckFoundryBundle::boot() may have already booted Foundry with the concrete
+     * Configuration of the initial container (FriendsOfBehat boots the kernel before any Behat
+     * event): replace it with a closure re-resolving the configuration from the kernel's
+     * CURRENT container, so services stay fresh across the per-scenario kernel reboots even in
+     * modes that never shut Foundry down (disabled, manual).
+     */
+    public function bootFoundryForExercise(): void
+    {
+        Configuration::shutdown();
+        $this->bootFoundry();
     }
 
     public function bootFoundry(): void

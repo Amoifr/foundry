@@ -13,6 +13,7 @@ namespace Zenstruck\Foundry\Test\Behat\Tests\Integration\Behat\Listener;
 
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\RebootableInterface;
 use Zenstruck\Foundry\Configuration;
 use Zenstruck\Foundry\Test\Behat\Listener\BootConfigurationListener;
 use Zenstruck\Foundry\Test\Behat\ObjectRegistry;
@@ -58,6 +59,26 @@ final class BootConfigurationListenerTest extends KernelTestCase
 
         self::assertFalse($registry->isStored($testObj));
         self::assertFalse(Configuration::isBooted());
+    }
+
+    #[Test]
+    public function it_replaces_a_configuration_booted_by_the_bundle(): void
+    {
+        $kernel = self::$kernel ?? self::bootKernel();
+
+        // simulate ZenstruckFoundryBundle::boot(): the concrete instance of the initial
+        // container is installed before any Behat event
+        Configuration::shutdown();
+        $staleConfiguration = $kernel->getContainer()->get('.zenstruck_foundry.configuration');
+        \assert($staleConfiguration instanceof Configuration);
+        Configuration::boot($staleConfiguration);
+
+        $this->createListener()->bootFoundryForExercise();
+
+        \assert($kernel instanceof RebootableInterface);
+        $kernel->reboot(null);
+
+        self::assertNotSame($staleConfiguration, Configuration::instance());
     }
 
     private function objectRegistry(): ObjectRegistry
