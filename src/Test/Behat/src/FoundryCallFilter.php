@@ -156,7 +156,7 @@ final class FoundryCallFilter implements CallFilter
     {
         if (\preg_match('/^<foundry:lastObject\(\s*(?<factoryShortName>[^)]+?)\s*\)>$/', $value, $matches)) {
             try {
-                return $this->objectRegistry()->lastObjectFor($matches['factoryShortName']);
+                return $this->objectRegistry()->lastObjectFor(self::unquote($matches['factoryShortName']));
             } catch (CompositeIdentifierNotSupported $e) {
                 throw InvalidObjectParameter::compositeIdentifier($propertyName, $e);
             }
@@ -167,10 +167,18 @@ final class FoundryCallFilter implements CallFilter
         }
 
         try {
-            return $this->objectRegistry()->getByFactoryShortName($matches['factoryShortName'], $matches['objectName']);
+            return $this->objectRegistry()->getByFactoryShortName(self::unquote($matches['factoryShortName']), self::unquote($matches['objectName']));
         } catch (ObjectNotFound $e) {
             throw InvalidObjectParameter::objectReferencedInTableDoesNotExist($propertyName, $e);
         }
+    }
+
+    /**
+     * Same quoting rules as the <foundry:id()>/<foundry:lastId()> placeholders.
+     */
+    private static function unquote(string $value): string
+    {
+        return \trim($value, '"');
     }
 
     private function resolveObjectReferenceBasedOnPropertyType(string $propertyName, string $value, string $factoryShortName): mixed

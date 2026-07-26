@@ -72,6 +72,15 @@ Feature: Test objects creation
     Then 1 category should exist
     Then 1 address should exist
 
+  Scenario: Can reference another object with a quoted name
+    Given there is a category named "My Category"
+    And there is a contact named A with:
+      | name     | category                                  |
+      | John Doe | <foundry:object(category, "My Category")> |
+    Then contact named A should have properties:
+      | category                                  |
+      | <foundry:object(category, "My Category")> |
+
   Scenario: Can reference the latest object of a type
     Given there is a category named "old"
     And there is a category named "new"
