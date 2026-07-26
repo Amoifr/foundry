@@ -26,6 +26,9 @@ class EntityWithUid
     #[ORM\Column(type: 'uuid')]
     public Uuid $id;
 
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    public ?EntityWithUid $parent = null;
+
     public function __construct()
     {
         $this->id = Uuid::v7();

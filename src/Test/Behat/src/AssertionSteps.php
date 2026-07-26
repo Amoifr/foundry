@@ -12,6 +12,7 @@
 namespace Zenstruck\Foundry\Test\Behat;
 
 use Behat\Step\Then;
+use Symfony\Component\Uid\AbstractUid;
 use Zenstruck\Assert;
 use Zenstruck\Foundry\Configuration;
 use Zenstruck\Foundry\Persistence\Exception\ObjectNoLongerExist;
@@ -266,7 +267,22 @@ trait AssertionSteps
 
         $criteria = $persistence->getIdentifierValues($object);
 
-        return $criteria && !\in_array(null, $criteria, true) ? $criteria : null;
+        if (!$criteria || \in_array(null, $criteria, true)) {
+            return null;
+        }
+
+        // ids may hydrate as fresh object instances after a kernel reboot (Uuid, Ulid,
+        // Mongo ObjectId...): normalize them so two instances carrying the same value compare equal
+        return \array_map(self::normalizeIdentifierValue(...), $criteria);
+    }
+
+    private static function normalizeIdentifierValue(mixed $value): mixed
+    {
+        return match (true) {
+            $value instanceof AbstractUid => $value->toRfc4122(),
+            $value instanceof \Stringable => (string) $value,
+            default => $value,
+        };
     }
 
     private function persistenceFor(object $object): ?PersistenceManager
