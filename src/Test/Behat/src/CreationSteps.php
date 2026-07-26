@@ -18,14 +18,16 @@ use Zenstruck\Foundry\ObjectFactory;
 /**
  * Built-in "Given" steps creating Foundry objects.
  *
- * The composing class must implement FoundryContextInterface and declare
- * FactoryShortNameResolver $factoryResolver and ObjectRegistry $objectRegistry
- * properties (see FoundryCreationContext).
+ * The composing class only needs to implement FoundryContextInterface; the dependencies are
+ * injected by the HasFactoryShortNameResolver and HasObjectRegistry traits (see FoundryCreationContext).
  *
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */
 trait CreationSteps
 {
+    use HasFactoryShortNameResolver;
+    use HasObjectRegistry;
+
     #[Given('there is a(n) :factoryShortName')]
     #[Given('there is a(n) :factoryShortName named :objectName')]
     public function createObject(string $factoryShortName, ?string $objectName = null): void

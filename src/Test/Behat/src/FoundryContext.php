@@ -25,10 +25,4 @@ final class FoundryContext implements FoundryContextInterface
     use AssertionSteps;
     use CreationSteps;
     use PlaceholderTransforms;
-
-    public function __construct(
-        private readonly FactoryShortNameResolver $factoryResolver,
-        private readonly ObjectRegistry $objectRegistry,
-    ) {
-    }
 }

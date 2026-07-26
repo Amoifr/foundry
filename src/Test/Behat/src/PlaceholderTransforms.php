@@ -17,13 +17,15 @@ use Behat\Transformation\Transform;
  * Built-in transformations resolving <foundry:lastId(...)> and <foundry:id(...)>
  * placeholders in step arguments.
  *
- * The composing class must implement FoundryContextInterface and declare an
- * ObjectRegistry $objectRegistry property (see FoundryPlaceholderContext).
+ * The composing class only needs to implement FoundryContextInterface; the ObjectRegistry is
+ * injected by the HasObjectRegistry trait (see FoundryPlaceholderContext).
  *
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */
 trait PlaceholderTransforms
 {
+    use HasObjectRegistry;
+
     #[Transform('/(.*)<foundry:lastId\(\s*([^)]+?)\s*\)>(.*)/')]
     public function transformLastIdForSpecificObject(string $before, string $factoryShortName, string $after): string
     {

@@ -19,10 +19,4 @@ namespace Zenstruck\Foundry\Test\Behat;
 final class FoundryCreationContext implements FoundryContextInterface
 {
     use CreationSteps;
-
-    public function __construct(
-        private readonly FactoryShortNameResolver $factoryResolver,
-        private readonly ObjectRegistry $objectRegistry,
-    ) {
-    }
 }

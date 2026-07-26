@@ -20,6 +20,8 @@ use Zenstruck\Foundry\Test\Behat\Exception\FactoryNotResolvable;
 use function Symfony\Component\String\u;
 
 /**
+ * Resolves Foundry factories from their human-readable short names.
+ *
  * @internal
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */

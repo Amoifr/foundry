@@ -28,14 +28,16 @@ use function Zenstruck\Foundry\Persistence\repository;
 /**
  * Built-in "Then" steps asserting on Foundry objects and on the database.
  *
- * The composing class must implement FoundryContextInterface and declare
- * FactoryShortNameResolver $factoryResolver and ObjectRegistry $objectRegistry
- * properties (see FoundryAssertionContext).
+ * The composing class only needs to implement FoundryContextInterface; the dependencies are
+ * injected by the HasFactoryShortNameResolver and HasObjectRegistry traits (see FoundryAssertionContext).
  *
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */
 trait AssertionSteps
 {
+    use HasFactoryShortNameResolver;
+    use HasObjectRegistry;
+
     #[Then('/^(\d+) "([^"]*)" should exist$/')]
     #[Then('/^(\d+) (?!.*\S\s+named\s+\S)([^"]*) should exist$/')]
     public function assertNbObjectsExist(int $nb, string $factoryShortName): void

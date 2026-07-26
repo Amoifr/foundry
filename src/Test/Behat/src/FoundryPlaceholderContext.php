@@ -20,9 +20,4 @@ namespace Zenstruck\Foundry\Test\Behat;
 final class FoundryPlaceholderContext implements FoundryContextInterface
 {
     use PlaceholderTransforms;
-
-    public function __construct(
-        private readonly ObjectRegistry $objectRegistry,
-    ) {
-    }
 }

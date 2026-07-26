@@ -20,10 +20,4 @@ namespace Zenstruck\Foundry\Test\Behat;
 final class FoundryAssertionContext implements FoundryContextInterface
 {
     use AssertionSteps;
-
-    public function __construct(
-        private readonly FactoryShortNameResolver $factoryResolver,
-        private readonly ObjectRegistry $objectRegistry,
-    ) {
-    }
 }

@@ -22,6 +22,8 @@ use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 use function Zenstruck\Foundry\Persistence\repository;
 
 /**
+ * Registry of the named objects created during a Behat exercise.
+ *
  * @internal
  * @author Nicolas PHILIPPE <nikophil@gmail.com>
  */

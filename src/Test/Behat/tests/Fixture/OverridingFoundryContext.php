@@ -17,9 +17,7 @@ use Behat\Step\Then;
 use Behat\Transformation\Transform;
 use Zenstruck\Foundry\Test\Behat\AssertionSteps;
 use Zenstruck\Foundry\Test\Behat\CreationSteps;
-use Zenstruck\Foundry\Test\Behat\FactoryShortNameResolver;
 use Zenstruck\Foundry\Test\Behat\FoundryContextInterface;
-use Zenstruck\Foundry\Test\Behat\ObjectRegistry;
 use Zenstruck\Foundry\Test\Behat\PlaceholderTransforms;
 
 /**
@@ -39,12 +37,6 @@ final class OverridingFoundryContext implements FoundryContextInterface
     }
     use PlaceholderTransforms {
         transformLastIdForSpecificObject as private builtinTransformLastIdForSpecificObject;
-    }
-
-    public function __construct(
-        private readonly FactoryShortNameResolver $factoryResolver,
-        private readonly ObjectRegistry $objectRegistry,
-    ) {
     }
 
     #[Given('create a :factoryShortName called :objectName')]
