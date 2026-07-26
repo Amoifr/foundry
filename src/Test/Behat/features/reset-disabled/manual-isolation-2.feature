@@ -9,5 +9,5 @@ Feature: No database isolation (disabled mode) - Part 2
     Then contact named A should not exist
 
   @resetDB
-  Scenario: DB should be reset
+  Scenario: The resetDB tag has no effect when reset is disabled
     Then 2 contacts should exist
