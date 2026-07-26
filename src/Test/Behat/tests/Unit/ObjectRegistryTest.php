@@ -189,6 +189,19 @@ final class ObjectRegistryTest extends TestCase
     }
 
     #[Test]
+    public function it_allows_reregistering_a_name_from_a_previous_scenario(): void
+    {
+        $this->registry->store(new User(id: 1, name: 'John'), 'bg-object');
+
+        ObjectRegistry::startScenario();
+
+        $replacement = new User(id: 2, name: 'Jane');
+        $this->registry->store($replacement, 'bg-object');
+
+        self::assertSame($replacement, $this->registry->getByObjectClass(User::class, 'bg-object'));
+    }
+
+    #[Test]
     public function it_ignores_story_state_events_outside_a_behat_exercise(): void
     {
         $event = new StateAddedToStory(new User(id: 1, name: 'John'), 'john');

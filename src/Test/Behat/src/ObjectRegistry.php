@@ -42,6 +42,16 @@ final class ObjectRegistry
      */
     private static bool $capturingStoryStates = false;
 
+    /**
+     * In reset modes where the registry survives across scenarios (feature, manual, disabled),
+     * a Background block re-creates its named objects before every scenario: re-registering a
+     * name from a previous scenario replaces it, while a duplicate within the same scenario
+     * remains an error.
+     *
+     * @var array<class-string, array<string, true>>
+     */
+    private static array $namesInCurrentScenario = [];
+
     public function __construct(
         private readonly FactoryShortNameResolver $factoryShortNameResolver,
         private readonly IdentifierResolver $persistenceManager,
@@ -77,11 +87,17 @@ final class ObjectRegistry
         $object = ProxyGenerator::unwrap($object, withAutoRefresh: false);
         \assert(\is_object($object));
 
-        if ($this->has($object::class, $objectName)) {
+        if (isset(self::$namesInCurrentScenario[$object::class][$objectName])) {
             throw ObjectAlreadyRegistered::forClassAndName($object::class, $objectName);
         }
 
+        self::$namesInCurrentScenario[$object::class][$objectName] = true;
         self::$objects[$object::class][$objectName] = $object;
+    }
+
+    public static function startScenario(): void
+    {
+        self::$namesInCurrentScenario = [];
     }
 
     /**
@@ -120,6 +136,7 @@ final class ObjectRegistry
     public function reset(): void
     {
         self::$objects = [];
+        self::$namesInCurrentScenario = [];
     }
 
     /**

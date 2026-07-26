@@ -40,9 +40,18 @@ final class BootConfigurationListener implements EventSubscriberInterface
             FeatureTested::BEFORE => ['bootFoundry', 100],
             FeatureTested::AFTER => ['shutdownFoundryAfterFeature', -100],
 
-            ScenarioTested::BEFORE => ['bootFoundry', 100],
-            ExampleTested::BEFORE => ['bootFoundry', 100],
+            ScenarioTested::BEFORE => [['startScenario', 110], ['bootFoundry', 100]],
+            ExampleTested::BEFORE => [['startScenario', 110], ['bootFoundry', 100]],
         ];
+    }
+
+    /**
+     * Named objects created by a replayed Background may re-register their name: the registry
+     * only rejects duplicates within a single scenario.
+     */
+    public function startScenario(): void
+    {
+        ObjectRegistry::startScenario();
     }
 
     public function bootFoundry(): void
