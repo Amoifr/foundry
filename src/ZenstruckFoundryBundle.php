@@ -277,7 +277,11 @@ final class ZenstruckFoundryBundle extends AbstractBundle implements CompilerPas
         $container->addCompilerPass(new AsFixtureStoryCompilerPass());
 
         // cross-package contract: this class ships with zenstruck/foundry-behat, which cannot
-        // register the pass itself since only bundles get a build() hook
+        // register the pass itself since only bundles get a build() hook. The pass ends up
+        // running in EVERY test-env container (FriendsOfBehat's "behat.service_container" is a
+        // synthetic definition, present even under PHPUnit): the services it loads must stay
+        // lazy and inert outside a Behat exercise (see ObjectRegistry::$capturingStoryStates,
+        // guaranteed by StoryStatesOutsideBehatTest).
         if (\class_exists(BehatServicesCompilerPass::class)) {
             $container->addCompilerPass(new BehatServicesCompilerPass());
         }
