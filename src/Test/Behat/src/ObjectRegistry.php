@@ -162,27 +162,6 @@ final class ObjectRegistry
         return repository($objectClass)->lastOrFail($this->identifierSortFieldFor($objectClass));
     }
 
-    /**
-     * The identifier field is not necessarily named "id" (e.g. a Uuid $uuid property). Composite
-     * identifiers are rejected: "the last row" has no single column to sort on, mirroring the
-     * "exactly one identifier" invariant enforced on values by coerceIdToScalar(). The caller
-     * (placeholder-aware) decorates the exception with the offending placeholder.
-     *
-     * @param class-string $objectClass
-     *
-     * @throws CompositeIdentifierNotSupported
-     */
-    private function identifierSortFieldFor(string $objectClass): string
-    {
-        $fields = $this->persistenceManager->getIdentifierFields($objectClass);
-
-        if (1 !== \count($fields)) {
-            throw CompositeIdentifierNotSupported::forClass($objectClass, $fields);
-        }
-
-        return $fields[0];
-    }
-
     public function idFor(string $factoryShortName, string $objectName): int|string
     {
         // unwrap() also initializes uninitialized lazy ghosts (e.g. reset by the
@@ -235,6 +214,27 @@ final class ObjectRegistry
             self::$objects[$object::class] ?? [],
             static fn(object $o) => $o === $object
         ) ?? throw new \LogicException('Object is not stored in the registry.');
+    }
+
+    /**
+     * The identifier field is not necessarily named "id" (e.g. a Uuid $uuid property). Composite
+     * identifiers are rejected: "the last row" has no single column to sort on, mirroring the
+     * "exactly one identifier" invariant enforced on values by coerceIdToScalar(). The caller
+     * (placeholder-aware) decorates the exception with the offending placeholder.
+     *
+     * @param class-string $objectClass
+     *
+     * @throws CompositeIdentifierNotSupported
+     */
+    private function identifierSortFieldFor(string $objectClass): string
+    {
+        $fields = $this->persistenceManager->getIdentifierFields($objectClass);
+
+        if (1 !== \count($fields)) {
+            throw CompositeIdentifierNotSupported::forClass($objectClass, $fields);
+        }
+
+        return $fields[0];
     }
 
     private static function unquote(string $value): string

@@ -21,7 +21,6 @@ use Zenstruck\Foundry\Test\Behat\Exception\CompositeIdentifierNotSupported;
 use Zenstruck\Foundry\Test\Behat\Exception\InvalidObjectParameter;
 use Zenstruck\Foundry\Test\Behat\Exception\ObjectNotFound;
 
-
 /**
  * @internal
  *

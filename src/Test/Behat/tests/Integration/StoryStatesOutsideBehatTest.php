@@ -49,7 +49,7 @@ final class StoryStatesOutsideBehatTest extends KernelTestCase
         // simulate the next PHPUnit test in the same process: fresh Configuration, story registry cleared
         Configuration::shutdown();
         Configuration::boot(
-            fn() => self::getContainer()->get('.zenstruck_foundry.configuration') // @phpstan-ignore argument.type
+            static fn() => self::getContainer()->get('.zenstruck_foundry.configuration') // @phpstan-ignore argument.type
         );
 
         ContactStory::load();
