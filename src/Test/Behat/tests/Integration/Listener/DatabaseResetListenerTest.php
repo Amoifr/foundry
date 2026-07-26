@@ -20,6 +20,7 @@ use Behat\Testwork\Suite\GenericSuite;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Zenstruck\Foundry\Configuration;
 use Zenstruck\Foundry\Test\Behat\DatabaseResetMode;
 use Zenstruck\Foundry\Test\Behat\Exception\DamaNativeExtensionIncompatibility;
@@ -268,6 +269,20 @@ final class DatabaseResetListenerTest extends KernelTestCase
         $event = $this->createFeatureEvent([]);
 
         $listener->validateFeature($event);
+    }
+
+    #[Test]
+    public function it_throws_when_dama_support_is_enabled_without_the_bundle(): void
+    {
+        $kernelWithoutDama = $this->createStub(KernelInterface::class);
+        $kernelWithoutDama->method('getBundles')->willReturn([]);
+
+        $listener = new DatabaseResetListener($kernelWithoutDama, DatabaseResetMode::SCENARIO, damaSupportEnabled: true, damaNativeExtensionIsEnabled: false);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('DAMADoctrineTestBundle is not registered');
+
+        $listener->resetBeforeSuite();
     }
 
     private function createListener(

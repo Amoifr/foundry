@@ -18,8 +18,10 @@ use Behat\Behat\EventDispatcher\Event\FeatureTested;
 use Behat\Behat\EventDispatcher\Event\ScenarioTested;
 use Behat\Gherkin\Node\TaggedNodeInterface;
 use Behat\Testwork\EventDispatcher\Event\ExerciseCompleted;
+use DAMA\DoctrineTestBundle\DAMADoctrineTestBundle;
 use DAMA\DoctrineTestBundle\Doctrine\DBAL\StaticDriver;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Zenstruck\Foundry\Configuration;
 use Zenstruck\Foundry\Persistence\ResetDatabase\ResetDatabaseManager;
@@ -75,6 +77,7 @@ final class DatabaseResetListener implements EventSubscriberInterface
     public function resetBeforeSuite(): void
     {
         if ($this->damaSupportEnabled) {
+            $this->assertDamaBundleIsRegistered();
             StaticDriver::setKeepStaticConnections(true);
         }
 
@@ -207,6 +210,20 @@ final class DatabaseResetListener implements EventSubscriberInterface
         $node = $event instanceof BeforeFeatureTested ? $event->getFeature() : $event->getScenario();
 
         return $node instanceof TaggedNodeInterface && $node->hasTag($tag);
+    }
+
+    /**
+     * Without the bundle, DAMA's DBAL middleware is not wired: StaticDriver never opens a
+     * static connection and rollBack()/beginTransaction() would be silent no-ops, letting
+     * data leak from scenario to scenario without any isolation.
+     */
+    private function assertDamaBundleIsRegistered(): void
+    {
+        $this->symfonyKernel->boot();
+
+        if (!array_any($this->symfonyKernel->getBundles(), static fn(BundleInterface $bundle) => $bundle instanceof DAMADoctrineTestBundle)) {
+            throw new \LogicException('Foundry\'s DAMA support is enabled but DAMADoctrineTestBundle is not registered in the application kernel: no transaction isolation would happen. Register "DAMA\DoctrineTestBundle\DAMADoctrineTestBundle" for the test environment in "config/bundles.php".');
+        }
     }
 
     private function resetObjectRegistry(): void
