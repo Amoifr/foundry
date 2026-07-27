@@ -3,6 +3,7 @@ name: 'Packages Split'
 on:
   push:
     branches: [2.x]
+  workflow_dispatch: ~
 
 jobs:
   packages_split:
@@ -12,7 +13,7 @@ jobs:
 
       - uses: danharrin/monorepo-split-github-action@v2.4.5
         env:
-          GITHUB_TOKEN: ${{ secrets.PACKAGE_PUSH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SPLIT_FOUNDRY_BEHAT }}
         with:
           package_directory: 'src/Test/Behat'
           repository_organization: 'zenstruck'
