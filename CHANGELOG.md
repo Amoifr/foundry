@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## [v2.11.0](https://github.com/zenstruck/foundry/releases/tag/v2.11.0)
+
+July 27th, 2026 - [v2.10.3...v2.11.0](https://github.com/zenstruck/foundry/compare/v2.10.3...v2.11.0)
+
+* 3a13443 feat(behat): --lowest run should use doctrine/orm ^2 (#1136) by @nikophil
+* ece8617 feat(behat): use specific PAT for split by @nikophil
+* 9d36994 fix(behat): split subtree needs correct PAT by @nikophil
+* 7ae1e71 fix(behat): make symlink-vendor.sh a no-op outside the monorepo (#1085) by @nikophil
+* 06a514a chore(behat): exclude dev-only files from the split package dist (#1085) by @nikophil
+* 1681d55 chore(behat): untrack composer.lock, already gitignored (#1085) by @nikophil
+* b307efe ci(behat): trigger the Behat workflow on main-package changes (#1085) by @nikophil
+* b20d8b2 test(behat): specify @withFixture semantics in disabled reset mode (#1085) by @nikophil
+* bff4466 test(behat): exercise every wording variant of the property assertion steps (#1085) by @nikophil
+* 6c43019 test(behat): fix contradictory scenario title in disabled-mode feature (#1085) by @nikophil
+* 8337ae9 test(behat): turn three registry has() calls into real assertions (#1085) by @nikophil
+* f0cf153 test(behat): cover the FoundryExtension configuration validation matrix (#1085) by @nikophil
+* 69e67e0 fix(behat): drop @internal from the documented injection points (#1085) by @nikophil
+* 0d754d0 docs: document the shared-container contract of BehatServicesCompilerPass (#1085) by @nikophil
+* 252719d fix(behat): replace the Configuration booted by the bundle at exercise start (#1085) by @nikophil
+* 8b7f771 fix(behat): do not reload global stories under DAMA's native extension (#1085) by @nikophil
+* 4dd59ac fix(behat): reset the database at suite start in manual mode with DAMA support (#1085) by @nikophil
+* 00feb6a fix(behat): fail loudly when DAMA support is enabled without the bundle (#1085) by @nikophil
+* 91fd887 fix(behat): support quoted names in object()/lastObject() placeholders (#1085) by @nikophil
+* 5c71353 fix(behat): register falsy object names like "0" at creation (#1085) by @nikophil
+* 2fb1775 fix(behat): allow Background blocks to re-register named objects across scenarios (#1085) by @nikophil
+* b84c9ce fix(behat): resolve the identifier field name for lastId/lastObject placeholders (#1085) by @nikophil
+* 42a234f fix(behat): normalize object identifiers in assertSameObject comparisons (#1085) by @nikophil
+* 3df8b3f fix: only store in ObjectRegistry when actually running Behat (#1085) by @nikophil
+* 6446224 feat(behat): replace step translations with trait-based context composition (#1085) by @nikophil
+* 1725b6a feat(behat): prefix Behat transformers with "foundry:" (#1085) by @nikophil
+* dacf86a feat: database-backed id placeholders and assertion steps (#1085) by @nikophil
+* b24a1a9 fix: few fixes after agentic review (#1085) by @nikophil
+* 0e11dd8 feat: override steps using translation (#1085) by @nikophil
+* 800abc4 docs: clarify ref(type, name) syntax as an escape hatch (#1085) by @nikophil, @claude
+* f33dbcf feat: support UUID-based entity ids in ObjectRegistry (#1085) by @nikophil, @claude
+* c312ab9 fix: allow quoted object names starting with digits in regex patterns (#1085) by @nikophil, @claude
+* d46d219 fix: improve error messages in AbstractFoundryContext (#1085) by @nikophil, @claude
+* f609e65 perf: optimize class-to-factory lookups with index map in FactoryShortNameResolver (#1085) by @nikophil, @claude
+* 8fef5a0 refactor: extract table normalization into private methods in FoundryCallFilter (#1085) by @nikophil, @claude
+* 743eaf5 chore: `zenstruck/foundry-behat` a subpackage (#1084) (#1085) by @nikophil
+* 8776ae9 feat/behat context (#1083) (#1085) by @nikophil
+
 ## [v2.10.3](https://github.com/zenstruck/foundry/releases/tag/v2.10.3)
 
 July 20th, 2026 - [v2.10.2...v2.10.3](https://github.com/zenstruck/foundry/compare/v2.10.2...v2.10.3)
