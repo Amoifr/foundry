@@ -12,7 +12,7 @@ jobs:
 
       - uses: danharrin/monorepo-split-github-action@v2.4.5
         env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_PUSH_TOKEN }}
         with:
           package_directory: 'src/Test/Behat'
           repository_organization: 'zenstruck'

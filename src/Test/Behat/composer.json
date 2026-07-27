@@ -38,7 +38,7 @@
     "symfony/polyfill-php85": "^1.33",
     "symfony/string": "^6.4|^7.0",
     "symfony/translation": "^6.4|^7.0",
-    "zenstruck/foundry": "dev-behat-extension"
+    "zenstruck/foundry": "2.x-dev || ^2.7"
   },
   "require-dev": {
     "bamarni/composer-bin-plugin": "^1.9",
