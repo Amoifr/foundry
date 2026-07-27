@@ -64,11 +64,13 @@
             "src/functions.php",
             "src/Persistence/functions.php",
             "src/symfony_console.php"
-        ]
+        ],
+        "exclude-from-classmap": ["src/Test/Behat/"]
     },
     "autoload-dev": {
         "psr-4": {
             "Zenstruck\\Foundry\\Tests\\": ["tests/"],
+            "Zenstruck\\Foundry\\Test\\Behat\\": "src/Test/Behat/src/",
             "App\\": "tests/Fixture/Maker/tmp/src",
             "App\\Tests\\": "tests/Fixture/Maker/tmp/tests",
             "Zenstruck\\Foundry\\Utils\\Rector\\Tests\\": "utils/rector/tests/"
@@ -100,9 +102,6 @@
         "symfony": {
             "allow-contrib": false
         }
-    },
-    "scripts": {
-        "post-install-cmd": ["@composer bin phpstan install", "@composer bin phpbench install"]
     },
     "minimum-stability": "dev",
     "prefer-stable": true

@@ -33,6 +33,7 @@ use Zenstruck\Foundry\ORM\ResetDatabase\MigrateDatabaseResetter;
 use Zenstruck\Foundry\ORM\ResetDatabase\OrmResetter;
 use Zenstruck\Foundry\ORM\ResetDatabase\ResetDatabaseMode;
 use Zenstruck\Foundry\ORM\ResetDatabase\SchemaDatabaseResetter;
+use Zenstruck\Foundry\Test\Behat\DependencyInjection\BehatServicesCompilerPass;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
@@ -274,6 +275,16 @@ final class ZenstruckFoundryBundle extends AbstractBundle implements CompilerPas
         $container->addCompilerPass($this);
         $container->addCompilerPass(new InMemoryCompilerPass());
         $container->addCompilerPass(new AsFixtureStoryCompilerPass());
+
+        // cross-package contract: this class ships with zenstruck/foundry-behat, which cannot
+        // register the pass itself since only bundles get a build() hook. The pass ends up
+        // running in EVERY test-env container (FriendsOfBehat's "behat.service_container" is a
+        // synthetic definition, present even under PHPUnit): the services it loads must stay
+        // lazy and inert outside a Behat exercise (see ObjectRegistry::$capturingStoryStates,
+        // guaranteed by StoryStatesOutsideBehatTest).
+        if (\class_exists(BehatServicesCompilerPass::class)) {
+            $container->addCompilerPass(new BehatServicesCompilerPass());
+        }
     }
 
     public function process(ContainerBuilder $container): void

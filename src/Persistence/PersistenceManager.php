@@ -33,7 +33,7 @@ use Zenstruck\Foundry\Persistence\ResetDatabase\ResetDatabaseManager;
  *
  * @final not final only to be mockable in tests
  */
-class PersistenceManager
+class PersistenceManager implements IdentifierResolver
 {
     private bool $flush = true;
     private bool $persist = true;
@@ -443,9 +443,22 @@ class PersistenceManager
         return $this->resetDatabaseManager;
     }
 
-    public function getIdentifierValues(object $object): mixed
+    /**
+     * @return array<string, mixed>
+     */
+    public function getIdentifierValues(object $object): array
     {
         return $this->strategyFor($object::class)->getIdentifierValues($object);
+    }
+
+    /**
+     * @param class-string $class
+     *
+     * @return list<string>
+     */
+    public function getIdentifierFields(string $class): array
+    {
+        return \array_values($this->metadataFor($class)->getIdentifier());
     }
 
     public static function isOrmOnly(): bool
