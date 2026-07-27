@@ -46,9 +46,9 @@ jobs:
           coverage: none
           tools: flex
 
-      - name: Add the polyfill compatible with Doctrine ^2.16
+      - name: Pin Doctrine ORM 2 and its php80 polyfill for the lowest deps
         if: ${{ matrix.deps == 'lowest' }}
-        run: composer require --dev symfony/polyfill-php80:^1.16 --no-update
+        run: composer require --dev "doctrine/orm:^2.16" symfony/polyfill-php80:^1.16 --no-update
 
       - name: Install dependencies
         uses: ramsey/composer-install@v2
@@ -109,9 +109,9 @@ jobs:
           coverage: none
           tools: flex
 
-      - name: Add the polyfill compatible with Doctrine ^2.16
+      - name: Pin Doctrine ORM 2 and its php80 polyfill for the lowest deps
         if: ${{ matrix.deps == 'lowest' }}
-        run: composer require --dev symfony/polyfill-php80:^1.16 --no-update
+        run: composer require --dev "doctrine/orm:^2.16" symfony/polyfill-php80:^1.16 --no-update
 
       - name: Install dependencies
         uses: ramsey/composer-install@v2

@@ -159,7 +159,11 @@ final class ObjectRegistry
     {
         $objectClass = $this->factoryShortNameResolver->targetObjectClassFor($factoryShortName);
 
-        return repository($objectClass)->lastOrFail($this->identifierSortFieldFor($objectClass));
+        // validate the sort field first: composite identifiers must be rejected as a pure domain
+        // error, before repository() (which requires a booted Foundry) is evaluated as the receiver
+        $sortField = $this->identifierSortFieldFor($objectClass);
+
+        return repository($objectClass)->lastOrFail($sortField);
     }
 
     public function idFor(string $factoryShortName, string $objectName): int|string
