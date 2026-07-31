@@ -11,6 +11,7 @@
 
 namespace Zenstruck\Foundry\Tests\Integration\Persistence;
 
+use Doctrine\Persistence\ObjectManager;
 use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -152,6 +153,21 @@ abstract class GenericFactoryTestCase extends KernelTestCase
         $object = static::factory()->create();
 
         static::factory()->repository()->assert()->exists(['prop1' => 'default1']);
+
+        delete($object);
+
+        static::factory()->repository()->assert()->empty();
+    }
+
+    /**
+     * @test
+     */
+    #[Test]
+    public function can_delete_a_detached_object(): void
+    {
+        $object = static::factory()->create();
+
+        $this->objectManager()->clear();
 
         delete($object);
 
@@ -762,4 +778,6 @@ abstract class GenericFactoryTestCase extends KernelTestCase
      * @return PersistentObjectFactory<GenericModel>
      */
     abstract protected static function factory(): PersistentObjectFactory;
+
+    abstract protected function objectManager(): ObjectManager;
 }
