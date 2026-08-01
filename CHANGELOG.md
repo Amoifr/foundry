@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [v2.11.1](https://github.com/zenstruck/foundry/releases/tag/v2.11.1)
+
+August 1st, 2026 - [v2.11.0...v2.11.1](https://github.com/zenstruck/foundry/compare/v2.11.0...v2.11.1)
+
+* eaabcd1 minor: remove clone in autorefresh() and fix stale tracked objects with ORM 2 (#1146) by @nikophil, @claude
+* 0b0f065 minor: reuse PersistenceManager::reattach() and clean up refresh()/autorefresh() (#1144) by @nikophil, @claude
+* 02c1b66 fix(ci): explicitly set matrix defaults in include entries (#1143) by @nikophil, @claude
+* 81abe19 fix: global state should always be reatached in Doctrine (#1142) by @nikophil
+* c256db4 fix: global state should not be accessed when persistence is not available (#1141) by @nikophil
+* bc4c489 fix: introduce `PersistenceManager::reattach()` (#1140) by @nikophil
+* ec03220 feat(behat): follow foundry tags and mark the integration as experimental (#1137) by @nikophil
+* b69cde4 feat(behat): fix composer dependencies by @nikophil
+* 24c00f7 minor(behat): bump foundry ^2.11 by @nikophil
+
 ## [v2.11.0](https://github.com/zenstruck/foundry/releases/tag/v2.11.0)
 
 July 27th, 2026 - [v2.10.3...v2.11.0](https://github.com/zenstruck/foundry/compare/v2.10.3...v2.11.0)
