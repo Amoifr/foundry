@@ -1,9 +1,12 @@
 name: 'Packages Split'
 
+# "release" is used instead of "push.tags", because release commits contain "[skip ci]",
+# which prevents GitHub from triggering any workflow on push events.
 on:
   push:
     branches: [2.x]
-    tags: ['v*']
+  release:
+    types: [published]
   workflow_dispatch: ~
 
 jobs:
