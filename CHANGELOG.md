@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.11.2](https://github.com/zenstruck/foundry/releases/tag/v2.11.2)
+
+August 3rd, 2026 - [v2.11.1...v2.11.2](https://github.com/zenstruck/foundry/compare/v2.11.1...v2.11.2)
+
+* 2624ee7 fix: prevent flushes from corrupting tracked objects reset as lazy ghosts (ORM   2 / ODM without native lazy objects). (#1147) by @nikophil
+* f26a1c7 minor: re-enable BC check by stripping the Behat subpackage from compared revisions (#1150) by @nikophil, @claude
+* c4dd64a fix(behat): fix package split workflow by @nikophil
+
 ## [v2.11.1](https://github.com/zenstruck/foundry/releases/tag/v2.11.1)
 
 August 1st, 2026 - [v2.11.0...v2.11.1](https://github.com/zenstruck/foundry/compare/v2.11.0...v2.11.1)
