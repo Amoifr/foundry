@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v2.11.3](https://github.com/zenstruck/foundry/releases/tag/v2.11.3)
+
+August 5th, 2026 - [v2.11.2...v2.11.3](https://github.com/zenstruck/foundry/compare/v2.11.2...v2.11.3)
+
+* e70f7e9 feat(behat): resolve id placeholders in PyString and table arguments (#1152) by @nikophil, @claude
+* b0effe0 refactor(behat): remove FoundryCallFilter and FoundryTableNode (#1151) by @nikophil, @claude
+
 ## [v2.11.2](https://github.com/zenstruck/foundry/releases/tag/v2.11.2)
 
 August 3rd, 2026 - [v2.11.1...v2.11.2](https://github.com/zenstruck/foundry/compare/v2.11.1...v2.11.2)
