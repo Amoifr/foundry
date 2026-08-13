@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v2.11.4](https://github.com/zenstruck/foundry/releases/tag/v2.11.4)
+
+August 13th, 2026 - [v2.11.3...v2.11.4](https://github.com/zenstruck/foundry/compare/v2.11.3...v2.11.4)
+
+* ce5f32d fix(behat): pass null through by-type transforms for optional multiline arguments (#1155) by @nikophil
+* 4b22a12 ci: test against Symfony 8.1 instead of EOL 8.0 (#1156) by @nikophil, @claude
+
 ## [v2.11.3](https://github.com/zenstruck/foundry/releases/tag/v2.11.3)
 
 August 5th, 2026 - [v2.11.2...v2.11.3](https://github.com/zenstruck/foundry/compare/v2.11.2...v2.11.3)
