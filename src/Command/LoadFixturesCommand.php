@@ -42,7 +42,7 @@ final class LoadFixturesCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('name', InputArgument::OPTIONAL, "Story's name or stories group's name to load.")
+            ->addArgument('name', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, "Stories' names or stories groups' names to load.")
             ->addOption('append', 'a', InputOption::VALUE_NONE, 'Skip resetting database and append data to the existing database.')
         ;
     }
@@ -65,21 +65,47 @@ final class LoadFixturesCommand extends Command
             $this->resetDatabase();
         }
 
-        $fixtureNameOrGroup = $input->getArgument('name') ?? $this->getNameWhenNotProvided($io);
+        /** @var array<string>|string|null $fixtureNamesOrGroups */
+        $fixtureNamesOrGroups = $input->getArgument('name');
 
-        $stories = $this->fixtureStoryResolver->resolve($fixtureNameOrGroup);
+        if (\is_string($fixtureNamesOrGroups)) {
+            trigger_deprecation('zenstruck/foundry', '2.12', 'Passing a string as the "name" argument of the "foundry:load-fixtures" command is deprecated and will throw an error in Foundry 3: pass an array of names instead.');
 
-        if ($this->fixtureStoryResolver->hasFixture($fixtureNameOrGroup)) {
-            $io->comment("Loading story with name \"{$fixtureNameOrGroup}\"...");
-        } else {
-            $io->comment("Loading stories group \"{$fixtureNameOrGroup}\"...");
+            $fixtureNamesOrGroups = [$fixtureNamesOrGroups];
         }
 
-        foreach ($stories as $name => $storyClass) {
-            $storyClass::load();
+        if (!$fixtureNamesOrGroups) {
+            $fixtureNamesOrGroups = [$this->getNameWhenNotProvided($io)];
+        }
 
-            if ($io->isVerbose()) {
-                $io->info("Story \"{$storyClass}\" loaded (name: {$name}).");
+        $resolvedStories = [];
+        foreach (\array_unique($fixtureNamesOrGroups) as $fixtureNameOrGroup) {
+            $resolvedStories[$fixtureNameOrGroup] = $this->fixtureStoryResolver->resolve($fixtureNameOrGroup);
+        }
+
+        $loadedStoryClasses = [];
+        foreach ($resolvedStories as $fixtureNameOrGroup => $stories) {
+            $fixtureNameOrGroup = (string) $fixtureNameOrGroup;
+
+            if ($this->fixtureStoryResolver->hasFixture($fixtureNameOrGroup)) {
+                $io->comment("Loading story with name \"{$fixtureNameOrGroup}\"...");
+            } else {
+                $io->comment("Loading stories group \"{$fixtureNameOrGroup}\"...");
+            }
+
+            foreach ($stories as $name => $storyClass) {
+                if (isset($loadedStoryClasses[$storyClass])) {
+                    $io->warning("Story \"{$storyClass}\" (name: {$name}) already loaded. Skipping...");
+
+                    continue;
+                }
+
+                $storyClass::load();
+                $loadedStoryClasses[$storyClass] = true;
+
+                if ($io->isVerbose()) {
+                    $io->info("Story \"{$storyClass}\" loaded (name: {$name}).");
+                }
             }
         }
 
