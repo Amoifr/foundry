@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v2.12.0](https://github.com/zenstruck/foundry/releases/tag/v2.12.0)
+
+August 14th, 2026 - [v2.11.4...v2.12.0](https://github.com/zenstruck/foundry/compare/v2.11.4...v2.12.0)
+
+* 9ab871f feat: load multiple groups/stories with foundry:load-fixtures (#1138) by @podoko
+
 ## [v2.11.4](https://github.com/zenstruck/foundry/releases/tag/v2.11.4)
 
 August 13th, 2026 - [v2.11.3...v2.11.4](https://github.com/zenstruck/foundry/compare/v2.11.3...v2.11.4)
