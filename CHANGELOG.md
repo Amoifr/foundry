@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v2.12.1](https://github.com/zenstruck/foundry/releases/tag/v2.12.1)
+
+August 26th, 2026 - [v2.12.0...v2.12.1](https://github.com/zenstruck/foundry/compare/v2.12.0...v2.12.1)
+
+* 006e433 fix: hydrate snapshots with deepclone_hydrate() (requires symfony/polyfill-deepclone ^1.42) (#1149) by @kabylixx, @nikophil
+* 997340f fix: give each test its own faker seed (#1158) by @nikophil
+* b5cea45 docs: add CLAUDE.md (#1157) by @nikophil, @claude
+
 ## [v2.12.0](https://github.com/zenstruck/foundry/releases/tag/v2.12.0)
 
 August 14th, 2026 - [v2.11.4...v2.12.0](https://github.com/zenstruck/foundry/compare/v2.11.4...v2.12.0)
